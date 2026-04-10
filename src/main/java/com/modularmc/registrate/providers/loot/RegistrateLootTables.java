@@ -1,0 +1,11 @@
+package com.modularmc.registrate.providers.loot;
+
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
+
+public interface RegistrateLootTables extends LootTableSubProvider {
+
+    default void validate(WritableRegistry<LootTable> writableRegistry, ValidationContext validationContext) {}
+}
