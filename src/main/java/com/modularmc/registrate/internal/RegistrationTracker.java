@@ -1,6 +1,7 @@
 package com.modularmc.registrate.internal;
 
 import com.modularmc.registrate.internal.util.DebugMarkers;
+import com.modularmc.registrate.internal.util.RegistrateLogger;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullConsumer;
 import com.modularmc.registrate.util.nullness.NonNullFunction;
@@ -30,6 +31,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class RegistrationTracker {
+
+    private static final Logger LOGGER = RegistrateLogger.registration();
 
     private static final class Registration<R, T extends R> {
 
@@ -72,27 +75,29 @@ public final class RegistrationTracker {
     }
 
     private final String modId;
-    private final Logger logger;
     private final Table<ResourceKey<? extends Registry<?>>, String, Registration<?, ?>> registrations = HashBasedTable.create();
     private final Multimap<Pair<String, ResourceKey<? extends Registry<?>>>, NonNullConsumer<?>> pendingEntryCallbacks = HashMultimap.create();
     private final Multimap<ResourceKey<? extends Registry<?>>, Runnable> afterRegisterCallbacks = HashMultimap.create();
     private final Set<ResourceKey<? extends Registry<?>>> completedRegistrations = new HashSet<>();
 
-    public RegistrationTracker(String modId, Logger logger) {
+    public RegistrationTracker(String modId) {
         this.modId = modId;
-        this.logger = logger;
     }
 
     public void onRegister(RegisterEvent event, boolean skipErrors, boolean devEnvironment) {
         ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
         if (registryKey == null) {
-            logger.debug(DebugMarkers.REGISTER, "Skipping invalid registry registration event with no key");
+            LOGGER.debug(
+                    DebugMarkers.REGISTER,
+                    RegistrateLogger.modMessage("Skipping registry event without a registry key"),
+                    modId);
             return;
         }
 
         if (!pendingEntryCallbacks.isEmpty()) {
-            pendingEntryCallbacks.asMap().forEach((entryKey, callbacks) -> logger.warn(
-                    "Found {} unused register callback(s) for entry {} [{}]. Was the entry ever registered?",
+            pendingEntryCallbacks.asMap().forEach((entryKey, callbacks) -> LOGGER.warn(
+                    RegistrateLogger.modMessage("Found {} unused register callback(s) for entry {} [{}]. Was the entry ever registered?"),
+                    modId,
                     callbacks.size(),
                     entryKey.getLeft(),
                     entryKey.getRight().identifier()));
@@ -107,8 +112,9 @@ public final class RegistrationTracker {
             return;
         }
 
-        logger.trace(DebugMarkers.REGISTER,
-                "({}) Registering {} known objects of type {}",
+        LOGGER.trace(
+                DebugMarkers.REGISTER,
+                RegistrateLogger.modMessage("Registering {} captured object(s) in {}"),
                 modId,
                 registrationsForType.size(),
                 registryKey.identifier());
@@ -116,17 +122,26 @@ public final class RegistrationTracker {
             Registration<?, ?> registration = entry.getValue();
             try {
                 registration.register(event);
-                logger.trace(
+                LOGGER.trace(
                         DebugMarkers.REGISTER,
-                        "Registered {} to registry {}",
+                        RegistrateLogger.modMessage("Registered {} in {}"),
+                        modId,
                         registration.getIdentifier(),
                         registryKey.identifier());
             } catch (Exception exception) {
-                String error = "Unexpected error while registering entry " + registration.getIdentifier() + " to registry " + registryKey.identifier();
                 if (skipErrors) {
-                    logger.error(DebugMarkers.REGISTER, error);
+                    LOGGER.error(
+                            DebugMarkers.REGISTER,
+                            RegistrateLogger.modMessage("Unexpected error while registering entry {} in {}"),
+                            modId,
+                            registration.getIdentifier(),
+                            registryKey.identifier(),
+                            exception);
                 } else {
-                    throw new RuntimeException(error, exception);
+                    throw new RuntimeException(
+                            "[%s] Unexpected error while registering entry %s in %s"
+                                    .formatted(modId, registration.getIdentifier(), registryKey.identifier()),
+                            exception);
                 }
             }
         }
@@ -154,11 +169,11 @@ public final class RegistrationTracker {
                 registryKey,
                 creator,
                 entryFactory);
-        logger.trace(
+        LOGGER.trace(
                 DebugMarkers.REGISTER,
-                "Captured registration for entry {}:{} of type {}",
+                RegistrateLogger.modMessage("Captured registration {} for registry {}"),
                 modId,
-                name,
+                registration.getIdentifier(),
                 registryKey.identifier());
         pendingEntryCallbacks.removeAll(Pair.of(name, registryKey)).forEach(callback -> {
             @SuppressWarnings("unchecked")

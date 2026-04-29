@@ -1,4 +1,4 @@
-# Registrate [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.tterrag.com%2Fjob%2FRegistrate%2Fjob%2F1.21%2F)](https://ci.tterrag.com/job/Registrate/job/1.21) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.tterrag.com%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.21.8-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
+# RegistrateLib [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.tterrag.com%2Fjob%2FRegistrate%2Fjob%2F1.21%2F)](https://ci.tterrag.com/job/Registrate/job/1.21) [![License](https://img.shields.io/github/license/ModularMCLib/RegistrateLib?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.tterrag.com%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-26.1.1-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
 
 A powerful wrapper for creating and registering objects in your mod.
 
@@ -91,25 +91,25 @@ public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.block("m
 
 This customized version will create a BlockItem (with its own default model and lang entry), add the block to a tag, configure the blockstate for stair properties, and add a custom localization.
 
-To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/job/1.21/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
+To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/job/1.21/javadoc/). For more advanced usage, read the [wiki](https://github.com/ModularMCLib/RegistrateLib/wiki) (WIP).
 
 ## Project Setup
 
-For this `26.1` fork, the preferred integration model is to depend on Registrate as a normal NeoForge library mod and declare it as a required dependency in your own metadata. Bundling remains possible for tightly controlled distributions, but standalone dependency loading is the default posture for this branch.
+For this `26.1` fork, the preferred integration model is to depend on RegistrateLib as a normal NeoForge library mod and declare it as a required dependency in your own metadata. Bundling remains possible for tightly controlled distributions, but standalone dependency loading is the default posture for this branch.
 
 Add the library to your Gradle dependencies:
 
 ```groovy
 dependencies {
-    implementation "com.modularmc.registrate:registrate:${registrate_version}"
+    implementation "com.modularmc.registrate:registratelib:${registratelib_version}"
 }
 ```
 
-Then declare `registrate` as a required dependency in your `neoforge.mods.toml`:
+Then declare `registratelib` as a required dependency in your `neoforge.mods.toml`:
 
 ```toml
 [[dependencies.yourmodid]]
-modId="registrate"
+modId="registratelib"
 type="required"
 versionRange="[2.0.0,)"
 ordering="AFTER"

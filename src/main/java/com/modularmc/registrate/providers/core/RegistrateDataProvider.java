@@ -3,6 +3,7 @@ package com.modularmc.registrate.providers.core;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.internal.datagen.RegistrateDatagenBootstrap;
 import com.modularmc.registrate.internal.util.DebugMarkers;
+import com.modularmc.registrate.internal.util.RegistrateLogger;
 import com.modularmc.registrate.providers.RegistrateTagsProvider;
 
 import net.minecraft.core.HolderLookup;
@@ -15,7 +16,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
-import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -26,8 +27,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Log4j2
 public class RegistrateDataProvider implements DataProvider {
+
+    private static final Logger LOGGER = RegistrateLogger.datagen();
 
     @SuppressWarnings("null")
     static final BiMap<String, ProviderType<?>> TYPES = HashBiMap.create();
@@ -60,8 +62,7 @@ public class RegistrateDataProvider implements DataProvider {
          * }
          */
 
-        // log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
-        log.debug(DebugMarkers.DATA, "Gathering providers");
+        LOGGER.debug(DebugMarkers.DATA, RegistrateLogger.modMessage("Collecting datagen providers"), mod);
         Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
         for (DataProviderInitializer.Sorted sorted : parent.getDataGenInitializer().getSortedProviders()) {
             ProviderType<?> type = sorted.type();
@@ -73,7 +74,11 @@ public class RegistrateDataProvider implements DataProvider {
             }
             known.put(type, prov);
             // if (sides.contains(prov.getSide())) {
-            log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
+            LOGGER.debug(
+                    DebugMarkers.DATA,
+                    RegistrateLogger.modMessage("Added datagen provider {}"),
+                    mod,
+                    sorted.id());
             subProviders.put(type, prov);
             // }
         }
@@ -86,7 +91,11 @@ public class RegistrateDataProvider implements DataProvider {
             var list = Lists.<CompletableFuture<?>>newArrayList();
 
             for (Map.Entry<ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
-                log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
+                LOGGER.debug(
+                        DebugMarkers.DATA,
+                        RegistrateLogger.modMessage("Running datagen provider {}"),
+                        mod,
+                        getTypeName(e.getKey()));
                 list.add(e.getValue().run(cache));
             } ;
 

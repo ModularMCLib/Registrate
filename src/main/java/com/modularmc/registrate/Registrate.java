@@ -1,15 +1,18 @@
 package com.modularmc.registrate;
 
+import com.modularmc.registrate.internal.util.RegistrateLogger;
+
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 
-import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 
-@Log4j2
 public class Registrate extends AbstractRegistrate<Registrate> {
+
+    private static final Logger LOGGER = RegistrateLogger.core();
 
     /**
      * Create a new {@link Registrate} and register event listeners for registration and data generation. Used in lieu
@@ -26,15 +29,10 @@ public class Registrate extends AbstractRegistrate<Registrate> {
         Optional<IEventBus> modEventBus = ModList.get().getModContainerById(modid)
                 .map(ModContainer::getEventBus);
 
-        modEventBus.ifPresentOrElse(ret::registerEventListeners, () -> {
-            String message = "# [Registrate] Failed to register eventListeners for mod " + modid + ", This should be reported to this mod's dev #";
-
-            StringBuilder hashtags = new StringBuilder().append("#".repeat(message.length()));
-
-            log.fatal(hashtags.toString());
-            log.fatal(message);
-            log.fatal(hashtags.toString());
-        });
+        modEventBus.ifPresentOrElse(ret::registerEventListeners, () -> LOGGER.fatal(
+                RegistrateLogger.modMessage(
+                        "Failed to locate the mod event bus during Registrate.create; registration listeners were not attached"),
+                modid));
 
         return ret;
     }

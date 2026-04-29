@@ -10,6 +10,7 @@ import com.modularmc.registrate.internal.RegistrationTracker;
 import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
 import com.modularmc.registrate.internal.lifecycle.RegistrateLifecycle;
 import com.modularmc.registrate.internal.util.DebugMarkers;
+import com.modularmc.registrate.internal.util.RegistrateLogger;
 import com.modularmc.registrate.providers.*;
 import com.modularmc.registrate.providers.core.*;
 import com.modularmc.registrate.util.CreativeModeTabModifier;
@@ -49,9 +50,9 @@ import com.mojang.serialization.Codec;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.jspecify.annotations.Nullable;
 
@@ -86,8 +87,10 @@ import java.util.function.UnaryOperator;
  *
  * For specifics as to building different registry entries, read the documentation on their respective builders.
  */
-@Log4j2
 public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
+
+    private static final Logger LOGGER = RegistrateLogger.core();
+    private static final Logger DATAGEN_LOGGER = RegistrateLogger.datagen();
 
     /**
      * Checks if Minecraft is running from a dev environment. Enables certain debug logging.
@@ -173,7 +176,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     protected AbstractRegistrate(String modid) {
         this.modid = modid;
-        this.registrationTracker = new RegistrationTracker(modid, log);
+        this.registrationTracker = new RegistrationTracker(modid);
         this.lifecycle = new RegistrateLifecycle(this, new LifecycleHooks());
     }
 
@@ -657,12 +660,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         datagens.get(type).forEach(cons -> {
             Optional<Pair<String, ResourceKey<? extends Registry<?>>>> entry = Optional.empty();
-            if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
+            if (DATAGEN_LOGGER.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
                 entry = getEntryForGenerator(type, cons);
                 if (entry.isPresent()) {
-                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().identifier());
+                    DATAGEN_LOGGER.debug(
+                            DebugMarkers.DATA,
+                            RegistrateLogger.modMessage("Generating data of type {} for entry {} [{}]"),
+                            modid,
+                            RegistrateDataProvider.getTypeName(type),
+                            entry.get().getLeft(),
+                            entry.get().getRight().identifier());
                 } else {
-                    log.debug(DebugMarkers.DATA, "Generating unassociated data of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                    DATAGEN_LOGGER.debug(
+                            DebugMarkers.DATA,
+                            RegistrateLogger.modMessage("Generating unassociated data of type {} ({})"),
+                            modid,
+                            RegistrateDataProvider.getTypeName(type),
+                            type);
                 }
             }
             try {
@@ -673,12 +687,21 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 }
                 Message err;
                 if (entry.isPresent()) {
-                    err = log.getMessageFactory().newMessage("Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().identifier());
+                    err = DATAGEN_LOGGER.getMessageFactory().newMessage(
+                            RegistrateLogger.modMessage("Unexpected error while running data generator of type {} for entry {} [{}]"),
+                            modid,
+                            RegistrateDataProvider.getTypeName(type),
+                            entry.get().getLeft(),
+                            entry.get().getRight().identifier());
                 } else {
-                    err = log.getMessageFactory().newMessage("Unexpected error while running unassociated data generator of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                    err = DATAGEN_LOGGER.getMessageFactory().newMessage(
+                            RegistrateLogger.modMessage("Unexpected error while running unassociated data generator of type {} ({})"),
+                            modid,
+                            RegistrateDataProvider.getTypeName(type),
+                            type);
                 }
                 if (skipErrors) {
-                    log.error(err);
+                    DATAGEN_LOGGER.error(err);
                 } else {
                     throw new RuntimeException(err.getFormattedMessage(), e);
                 }
@@ -698,7 +721,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     public S skipErrors(boolean skipErrors) {
         if (skipErrors && !isDevEnvironment()) {
-            log.error("Ignoring skipErrors(true) as this is not a development environment!");
+            LOGGER.warn(
+                    RegistrateLogger.modMessage("Ignoring skipErrors(true) because the runtime is not a development environment"),
+                    modid);
         } else {
             this.skipErrors = skipErrors;
         }
@@ -806,7 +831,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * <a href="https://github.com/ModularMCLib/RegistrateLib/wiki/Custom-Builders">custom builder type</a>.
      * <p>
      * Uses the currently set name (via {@link #object(String)}) as the name for the new entry, and passes it to the
      * factory as the first parameter.
@@ -829,7 +854,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * <a href="https://github.com/ModularMCLib/RegistrateLib/wiki/Custom-Builders">custom builder type</a>.
      *
      * @param <R>
      *                Registry type
