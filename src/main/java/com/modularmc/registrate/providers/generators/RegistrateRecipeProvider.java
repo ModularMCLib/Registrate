@@ -1,6 +1,6 @@
 package com.modularmc.registrate.providers.generators;
 
-import com.modularmc.registrate.providers.ProviderType;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.util.DataIngredient;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 

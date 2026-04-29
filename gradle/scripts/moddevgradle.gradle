@@ -4,6 +4,8 @@ static def isJetBrainsRuntime() {
     return System.getProperty('java.vm.vendor').contains('JetBrains')
 }
 
+def devTestModId = 'testmod'
+
 neoForge {
     version = libs.versions.neoForge.get()
 
@@ -30,9 +32,11 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
             sourceSet(sourceSets.client)
-            sourceSet(sourceSets.test)
             sourceSet(sourceSets.extra)
             sourceSet(sourceSets.clientExtra)
+        }
+        "${devTestModId}" {
+            sourceSet(sourceSets.test)
         }
     }
 
@@ -44,7 +48,7 @@ neoForge {
 
 
             gameDirectory.set(file('run/client'))
-            systemProperty('neoforge.enabledGameTestNamespaces', project.mod_id)
+            systemProperty('neoforge.enabledGameTestNamespaces', devTestModId)
         }
 
         server {
@@ -54,7 +58,7 @@ neoForge {
 
             gameDirectory.set(file('run/server'))
             programArguments.addAll('--nogui', '--world', 'world-extra')
-            systemProperty('neoforge.enabledGameTestNamespaces', project.mod_id)
+            systemProperty('neoforge.enabledGameTestNamespaces', devTestModId)
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -66,7 +70,7 @@ neoForge {
             ideName = "Game Tests"
 
             gameDirectory.set(file('run/gametest/server'))
-            systemProperty('neoforge.enabledGameTestNamespaces', project.mod_id)
+            systemProperty('neoforge.enabledGameTestNamespaces', devTestModId)
             environment('TEST', 'true')
         }
 
@@ -76,14 +80,14 @@ neoForge {
             ideName = "Game Tests (Client)"
 
             gameDirectory.set(file('run/gametest/client'))
-            systemProperty('neoforge.enabledGameTestNamespaces', project.mod_id)
+            systemProperty('neoforge.enabledGameTestNamespaces', devTestModId)
             environment('TEST', 'true')
         }
 
         data {
             clientData()
             serverData()
-            sourceSet = sourceSets.main
+            sourceSet = sourceSets.test
             ideName = "Data Generation"
 
             gameDirectory.set(file('run/data'))

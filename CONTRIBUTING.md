@@ -29,6 +29,6 @@
 
 ## Maintenance Notes
 
-- `RegistrateLib` is a fork metadata/constants holder, not a NeoForge mod entrypoint.
+- `RegistrateLib` is the library mod entrypoint for the fork and also holds shared metadata/constants.
 - `src/test/java/com/modularmc/registrate/test/meta` contains maintenance helpers for generated bridge methods.
 - When upstream Registrate changes, update implementation classes first and then re-verify package ownership against `docs/architecture.md`.

@@ -1,7 +1,7 @@
 package com.modularmc.registrate.providers.generators;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.providers.ProviderType;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.color.item.ItemTintSource;

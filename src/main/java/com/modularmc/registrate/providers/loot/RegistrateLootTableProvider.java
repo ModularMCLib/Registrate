@@ -1,8 +1,8 @@
 package com.modularmc.registrate.providers.loot;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.providers.ProviderType;
-import com.modularmc.registrate.providers.RegistrateProvider;
+import com.modularmc.registrate.providers.core.ProviderType;
+import com.modularmc.registrate.providers.core.RegistrateProvider;
 import com.modularmc.registrate.util.nullness.NonNullConsumer;
 
 import net.minecraft.core.Holder;

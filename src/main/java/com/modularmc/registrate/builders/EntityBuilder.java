@@ -1,13 +1,15 @@
 package com.modularmc.registrate.builders;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.builders.base.AbstractBuilder;
+import com.modularmc.registrate.builders.base.BuilderCallback;
+import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
+import com.modularmc.registrate.internal.util.RegistrateDistExecutor;
 import com.modularmc.registrate.providers.DataGenContext;
-import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.providers.loot.RegistrateEntityLootTables;
 import com.modularmc.registrate.providers.loot.RegistrateLootTableProvider.LootType;
-import com.modularmc.registrate.util.OneTimeEventReceiver;
-import com.modularmc.registrate.util.RegistrateDistExecutor;
 import com.modularmc.registrate.util.entry.EntityEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullBiConsumer;

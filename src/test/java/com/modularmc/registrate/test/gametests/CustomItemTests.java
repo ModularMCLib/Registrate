@@ -9,6 +9,7 @@ import net.neoforged.testframework.gametest.EmptyTemplate;
 import net.neoforged.testframework.gametest.GameTest;
 
 @ForEachTest(groups = "custom-item")
+@SuppressWarnings("unused")
 public class CustomItemTests {
 
     @GameTest
@@ -16,8 +17,8 @@ public class CustomItemTests {
     @TestHolder(description = "Ensure custom item is registered and has the expected properties")
     public static void ensureItemContent(final DynamicTest test) {
         test.onGameTest(helper -> helper.startSequence(() -> TestMod.instance().testitem.asStack())
-                .thenMap(stack -> stack.getHoverName().getString())
-                .thenExecute(name -> helper.assertValueEqual(name, "Testitem", "Test Item localized name"))
+                .thenMap(stack -> stack.getItem().getDescriptionId())
+                .thenExecute(descriptionId -> helper.assertValueEqual("item.testmod.testitem", descriptionId, "Test Item translation key"))
                 .thenSucceed());
     }
 }

@@ -13,7 +13,8 @@ import java.util.function.Predicate;
 
 /**
  * Wraps a {@link net.neoforged.neoforge.registries.DeferredHolder}, providing a cleaner API with null-safe access, and
- * registrate-specific extensions such as {@link #getSibling(ResourceKey)}.
+ * registrate-specific extensions such as {@link #getSibling(ResourceKey)} and
+ * {@link #getSiblingOptional(ResourceKey)}.
  *
  * @param <S>
  *            The type of the entry
@@ -35,8 +36,16 @@ public class RegistryEntry<R, S extends R> extends DeferredHolder<R, S> implemen
         return owner.get(getId().getPath(), registryType);
     }
 
+    public <X, Y extends X> Optional<RegistryEntry<X, Y>> getSiblingOptional(ResourceKey<? extends Registry<X>> registryType) {
+        return owner.getOptional(getId().getPath(), registryType);
+    }
+
     public <X, Y extends X> RegistryEntry<X, Y> getSibling(Registry<X> registry) {
         return getSibling(registry.key());
+    }
+
+    public <X, Y extends X> Optional<RegistryEntry<X, Y>> getSiblingOptional(Registry<X> registry) {
+        return getSiblingOptional(registry.key());
     }
 
     /**

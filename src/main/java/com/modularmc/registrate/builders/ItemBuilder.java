@@ -1,15 +1,17 @@
 package com.modularmc.registrate.builders;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.builders.base.AbstractBuilder;
+import com.modularmc.registrate.builders.base.BuilderCallback;
+import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
+import com.modularmc.registrate.internal.util.RegistrateDistExecutor;
 import com.modularmc.registrate.providers.DataGenContext;
-import com.modularmc.registrate.providers.GeneratorType;
-import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
+import com.modularmc.registrate.providers.core.GeneratorType;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.modularmc.registrate.providers.generators.RegistrateRecipeProvider;
 import com.modularmc.registrate.util.CreativeModeTabModifier;
-import com.modularmc.registrate.util.OneTimeEventReceiver;
-import com.modularmc.registrate.util.RegistrateDistExecutor;
 import com.modularmc.registrate.util.entry.ItemEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullBiConsumer;
@@ -36,7 +38,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -287,7 +288,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return dataMap(NeoForgeDataMaps.COMPOSTABLES, new Compostable(chance));
     }
 
-    private @Nullable Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
+    private @Nullable NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension;
 
     /**
      * Register a client extension for this item. The {@link IClientItemExtensions} instance can be shared across many
@@ -298,26 +299,17 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
+        if (this.clientExtension == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
-        this.clientExtensionFunc = item -> clientExtension;
-        return this;
-    }
-
-    @Deprecated(forRemoval = true)
-    public ItemBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
-        }
-        this.clientExtensionFunc = clientExtension;
+        this.clientExtension = clientExtension;
         return this;
     }
 
     protected void registerClientExtension() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
-            if (this.clientExtensionFunc != null) {
-                NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension = this.clientExtensionFunc.apply(getEntry());
+            NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension = this.clientExtension;
+            if (clientExtension != null) {
                 e.registerItem(clientExtension.get().get(), getEntry());
             }
         });

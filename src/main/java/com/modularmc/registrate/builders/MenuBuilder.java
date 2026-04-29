@@ -1,8 +1,10 @@
 package com.modularmc.registrate.builders;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.util.OneTimeEventReceiver;
-import com.modularmc.registrate.util.RegistrateDistExecutor;
+import com.modularmc.registrate.builders.base.AbstractBuilder;
+import com.modularmc.registrate.builders.base.BuilderCallback;
+import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
+import com.modularmc.registrate.internal.util.RegistrateDistExecutor;
 import com.modularmc.registrate.util.entry.MenuEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;

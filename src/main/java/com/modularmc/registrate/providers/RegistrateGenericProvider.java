@@ -1,13 +1,14 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.providers.core.ProviderType;
+import com.modularmc.registrate.providers.core.RegistrateProvider;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.ApiStatus;
@@ -26,13 +27,12 @@ public final class RegistrateGenericProvider implements RegistrateProvider {
     private final List<Generator> generators = Lists.newArrayList();
 
     @ApiStatus.Internal
-    RegistrateGenericProvider(AbstractRegistrate<?> registrate, GatherDataEvent event, LogicalSide side, ProviderType<RegistrateGenericProvider> providerType) {
+    public RegistrateGenericProvider(AbstractRegistrate<?> registrate, PackOutput output, CompletableFuture<HolderLookup.Provider> registries, LogicalSide side, ProviderType<RegistrateGenericProvider> providerType) {
         this.registrate = registrate;
+        this.output = output;
+        this.registries = registries;
         this.side = side;
         this.providerType = providerType;
-
-        output = event.getGenerator().getPackOutput();
-        registries = event.getLookupProvider();
     }
 
     public RegistrateGenericProvider add(Generator generator) {

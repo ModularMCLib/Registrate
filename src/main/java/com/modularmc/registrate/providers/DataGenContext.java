@@ -1,6 +1,6 @@
 package com.modularmc.registrate.providers;
 
-import com.modularmc.registrate.builders.Builder;
+import com.modularmc.registrate.builders.base.Builder;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.Registry;

@@ -10,7 +10,7 @@
   - Public entrypoints.
   - `AbstractRegistrate` is the orchestration core.
   - `Registrate` is the default public implementation.
-  - `RegistrateLib` is a fork metadata/constants holder used by this repository.
+  - `RegistrateLib` is the NeoForge library entrypoint for this fork and also exposes shared metadata/constants.
 - `com.modularmc.registrate.builders`
   - Public-facing fluent registration DSL.
   - Owns object construction rules and builder chaining behavior.
@@ -21,11 +21,19 @@
 - `com.modularmc.registrate.providers.loot`
   - Loot-specific provider wrappers and compatibility helpers.
 - `com.modularmc.registrate.util`
-  - Shared runtime helpers for one-time events, distribution checks, sequencing, and misc support code.
+  - Shared downstream-facing runtime and data helpers that remain part of the reusable library surface.
 - `com.modularmc.registrate.util.entry`
   - Strongly-typed handles returned from registrations.
 - `com.modularmc.registrate.util.nullness`
   - Functional interfaces and package-level nullness conventions.
+- `com.modularmc.registrate.internal`
+  - Non-public state trackers and implementation support types extracted from the central core.
+- `com.modularmc.registrate.internal.event`
+  - One-shot mod event wiring used to bridge builder callbacks onto the NeoForge mod bus.
+- `com.modularmc.registrate.internal.lifecycle`
+  - Per-instance lifecycle bridges that centralize `RegisterEvent`, creative-tab, and datagen bus wiring without introducing a shared global core.
+- `com.modularmc.registrate.internal.util`
+  - Dist-gated execution and internal debug logging helpers.
 - `com.modularmc.registrate.test.mod`
   - Sample mod used as an integration harness.
 - `com.modularmc.registrate.test.gametests`
@@ -43,6 +51,8 @@ Treat the root package plus `builders` and `util.entry` as the main downstream-f
 - New datagen orchestration belongs in `providers`.
 - Generator-specific helpers belong in `providers.generators` or `providers.loot`.
 - Cross-cutting runtime support belongs in `util` only when it is not builder- or provider-specific.
+- Event-bus plumbing and other implementation-only helpers belong under `internal`.
+- Instance-scoped NeoForge lifecycle orchestration belongs in `internal.lifecycle`.
 - Test-only scaffolding belongs under `src/test/java` even if it mirrors production APIs.
 
 ## Modernization Principles
@@ -50,4 +60,4 @@ Treat the root package plus `builders` and `util.entry` as the main downstream-f
 - Prefer explicit package ownership over convenience placement.
 - Keep public entrypoints small and push complexity into focused layers.
 - Document extension points where downstream mods are expected to integrate.
-- Preserve upstream compatibility where possible, but keep fork-specific behavior clearly identified.
+- Favor 26.1-native structure over preserving legacy compatibility on this dev branch.

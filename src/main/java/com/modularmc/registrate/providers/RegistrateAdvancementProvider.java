@@ -1,6 +1,8 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.providers.core.ProviderType;
+import com.modularmc.registrate.providers.core.RegistrateProvider;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;

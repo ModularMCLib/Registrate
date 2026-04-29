@@ -2,16 +2,18 @@ package com.modularmc.registrate.builders;
 
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
+import com.modularmc.registrate.builders.base.AbstractBuilder;
+import com.modularmc.registrate.builders.base.BuilderCallback;
+import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
+import com.modularmc.registrate.internal.util.RegistrateDistExecutor;
 import com.modularmc.registrate.providers.DataGenContext;
-import com.modularmc.registrate.providers.GeneratorType;
-import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
+import com.modularmc.registrate.providers.core.GeneratorType;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.providers.generators.RegistrateBlockModelGenerator;
 import com.modularmc.registrate.providers.generators.RegistrateRecipeProvider;
 import com.modularmc.registrate.providers.loot.RegistrateBlockLootTables;
 import com.modularmc.registrate.providers.loot.RegistrateLootTableProvider.LootType;
-import com.modularmc.registrate.util.OneTimeEventReceiver;
-import com.modularmc.registrate.util.RegistrateDistExecutor;
 import com.modularmc.registrate.util.entry.BlockEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullBiConsumer;
@@ -39,7 +41,6 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -171,8 +172,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>>item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
-                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting"
-                                                                      // providers
+                .removeData(ProviderType.LANG)
                 .model(() -> (ctx, prov) -> {
                     getOwner().getDataProvider(ProviderType.BLOCKSTATE)
                             .map(g -> g.seenBlockstates.get(getEntry()))
@@ -334,7 +334,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return setData(ProviderType.RECIPE, cons);
     }
 
-    private @Nullable Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtensionFunc;
+    private @Nullable NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension;
 
     /**
      * Register a client extension for this block.
@@ -345,34 +345,17 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
+        if (this.clientExtension == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
-        this.clientExtensionFunc = block -> clientExtension;
-        return this;
-    }
-
-    /**
-     * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many items.
-     *
-     * @param clientExtension
-     *                        The client extension to register for this block
-     * @return this {@link BlockBuilder}
-     */
-    @Deprecated(forRemoval = true)
-    public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
-        }
-        this.clientExtensionFunc = clientExtension;
+        this.clientExtension = clientExtension;
         return this;
     }
 
     protected void registerClientExtension() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
-            if (this.clientExtensionFunc != null) {
-                NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension = this.clientExtensionFunc.apply(getEntry());
+            NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension = this.clientExtension;
+            if (clientExtension != null) {
                 e.registerBlock(clientExtension.get().get(), getEntry());
             }
         });

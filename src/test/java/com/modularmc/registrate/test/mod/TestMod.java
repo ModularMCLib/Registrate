@@ -3,7 +3,7 @@ package com.modularmc.registrate.test.mod;
 import com.modularmc.registrate.Registrate;
 import com.modularmc.registrate.builders.BlockBuilder;
 import com.modularmc.registrate.providers.DataGenContext;
-import com.modularmc.registrate.providers.ProviderType;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.modularmc.registrate.util.DataIngredient;
 import com.modularmc.registrate.util.entry.*;
@@ -70,6 +70,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -121,7 +122,7 @@ public class TestMod {
 
     public static final String MOD_ID = "testmod";
 
-    private class TestBlock extends Block implements EntityBlock {
+    public static final class TestBlock extends Block implements EntityBlock {
 
         public TestBlock(Properties properties) {
             super(properties);
@@ -139,8 +140,8 @@ public class TestMod {
                 player.openMenu(new MenuProvider() {
 
                     @Override
-                    public @Nullable AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
-                        return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
+                    public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
+                        return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, TestMod.instance().testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
 
                     @Override
@@ -153,8 +154,8 @@ public class TestMod {
         }
 
         @Override
-        public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-            return testblockbe.create(pos, state);
+        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+            return TestMod.instance().testblockbe.create(pos, state);
         }
     }
 
@@ -198,21 +199,21 @@ public class TestMod {
         }
     }
 
-    private class TestDummyBlockEntity extends BlockEntity {
+    public static final class TestDummyBlockEntity extends BlockEntity {
 
         public TestDummyBlockEntity(BlockEntityType<? extends TestDummyBlockEntity> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
         }
     }
 
-    private static class TestEntity extends Pig {
+    public static final class TestEntity extends Pig {
 
         public TestEntity(EntityType<? extends Pig> p_i50250_1_, Level p_i50250_2_) {
             super(p_i50250_1_, p_i50250_2_);
         }
     }
 
-    private static class TestCustomRegistryEntry {}
+    public static final class TestCustomRegistryEntry {}
 
     private final Registrate registrate = Registrate.create("testmod");
 
@@ -226,7 +227,7 @@ public class TestMod {
     @VisibleForTesting
     public final ItemEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
-            .onRegister(item -> sawCallback.set(true))
+            .onRegister(ignored -> sawCallback.set(true))
             .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
             .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
@@ -244,7 +245,7 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
-            .properties(p -> p.noOcclusion())
+            .properties(BlockBehaviour.Properties::noOcclusion)
             .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
                     prov.getBuilder().transformTemplate(template -> template
                             .parent(prov.mcLoc("block/glass"))).build(ctx.getEntry())))
@@ -285,7 +286,6 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
 
-    @SuppressWarnings("deprecation")
     @VisibleForTesting
     public final EntityEntry<TestEntity> testentity = registrate.object("testentity")
             .entity(TestEntity::new, MobCategory.CREATURE)
@@ -326,68 +326,11 @@ public class TestMod {
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
 
-    // private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
-    // .biome(TestBiome::new)
-    // .properties(b -> b.category(Category.PLAINS)
-    // .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(),
-    // Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
-    // .precipitation(RainType.RAIN)
-    // .depth(1)
-    // .scale(1)
-    // .temperature(1)
-    // .downfall(1)
-    // .waterColor(0x3f76e4)
-    // .waterFogColor(0x050533))
-    // .typeWeight(BiomeType.WARM, 1000)
-    // .addDictionaryTypes(BiomeDictionary.Type.LUSH)
-    // .forceAutomaticDictionaryTypes()
-    // .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () ->
-    // Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
-    // .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.ICE_SPIKE, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new
-    // FrequencyConfig(100))
-    // .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
-    // .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
-    // .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
-    // .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
-    // .register();
-    //
-    // private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
-    // .biome(TestBiome::new)
-    // .properties(b -> b.category(Category.DESERT)
-    // .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(),
-    // Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
-    // .precipitation(RainType.NONE)
-    // .depth(1)
-    // .scale(1)
-    // .temperature(1)
-    // .downfall(1)
-    // .waterColor(0x3f76e4)
-    // .waterFogColor(0x050533))
-    // .typeWeight(BiomeType.DESERT, 1000)
-    // .addDictionaryTypes(BiomeDictionary.Type.DRY)
-    // .forceAutomaticDictionaryTypes()
-    // .copyFeatures(() -> Biomes.DESERT)
-    // .copyCarvers(() -> Biomes.DESERT)
-    // .copySpawns(() -> Biomes.DESERT)
-    // .register();
-    //
-    // private @Nullable DimensionType testdimensiontype;
-    // private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
-    // .dimension(OverworldDimension::new)
-    // .hasSkyLight(false)
-    // .keepLoaded(false)
-    // .dimensionTypeCallback(t -> testdimensiontype = t)
-    // .register();
-
     @VisibleForTesting
     public final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", RegistryBuilder::new);
     @VisibleForTesting
     public final RegistryEntry<TestCustomRegistryEntry, TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
-
-    // private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
-    // .block(Block::new)
-    // .addLayer(() -> RenderType::getTranslucent);
 
     private static <T extends Block, P> BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
@@ -405,14 +348,12 @@ public class TestMod {
         registrate.addRawLang("testmod.custom.lang.slashes", "/commmands look good and here is a backslash \\");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
-        registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
-            Advancement.Builder.advancement()
-                    .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
-                    .display(Items.EGG,
-                            adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
-                            Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
-                    .save(adv, registrate.getModid() + ":root");
-        });
+        registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> Advancement.Builder.advancement()
+                .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
+                .display(Items.EGG,
+                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
+                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
+                .save(adv, registrate.getModid() + ":root"));
         registrate.addDataGenerator(ProviderType.GENERIC_SERVER, provider -> provider.add(data -> {
             // generic server side provider to generate custom dimension
             // to teleport to this dimension use the following command
@@ -508,9 +449,10 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
-        if (testfluid.get().getBucket() != Items.AIR) throw new IllegalStateException("Expected no bucket for test fluid"); // should
-                                                                                                                            // not
-                                                                                                                            // crash
+        if (testfluid.getBucket().isPresent()) throw new IllegalStateException("Expected no bucket entry for test fluid");
+        if (testfluid.getSiblingOptional(Registries.ITEM).isPresent()) throw new IllegalStateException("Expected no item sibling for test fluid");
+        if (testfluid.getBlock().isPresent()) throw new IllegalStateException("Expected no block sibling for test fluid");
+        if (testfluid.getSource().getSource() != testfluid.getSource()) throw new IllegalStateException("Expected canonical fluid source");
     }
 
     private static class Client {

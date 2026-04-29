@@ -1,6 +1,8 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.providers.core.ProviderType;
+import com.modularmc.registrate.providers.core.RegistrateProvider;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -17,7 +19,7 @@ public class RegistrateDataMapProvider extends DataMapProvider implements Regist
 
     private HolderLookup.@Nullable Provider provider;
 
-    protected RegistrateDataMapProvider(AbstractRegistrate<?> parent, PackOutput output, CompletableFuture<HolderLookup.Provider> pvd) {
+    public RegistrateDataMapProvider(AbstractRegistrate<?> parent, PackOutput output, CompletableFuture<HolderLookup.Provider> pvd) {
         super(output, pvd);
         this.parent = parent;
     }

@@ -1,11 +1,13 @@
 package com.modularmc.registrate.builders;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.providers.ProviderType;
+import com.modularmc.registrate.builders.base.AbstractBuilder;
+import com.modularmc.registrate.builders.base.BuilderCallback;
+import com.modularmc.registrate.internal.event.OneTimeEventReceiver;
+import com.modularmc.registrate.internal.util.RegistrateDistExecutor;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
 import com.modularmc.registrate.providers.RegistrateTagsProvider;
-import com.modularmc.registrate.util.OneTimeEventReceiver;
-import com.modularmc.registrate.util.RegistrateDistExecutor;
+import com.modularmc.registrate.providers.core.ProviderType;
 import com.modularmc.registrate.util.entry.FluidEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.*;
@@ -578,10 +580,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         // This is done because we need to remove the lang data generator if using the block key,
         // and if it was possible to undo this change, it might result in the user translation getting
         // silently lost, as there's no good way to check whether the translation key was changed.
-        // TODO improve this?
         if (block.isPresent() && block.get().isBound()) {
             properties.descriptionId(block.get().get().getDescriptionId());
-            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+            removeData(ProviderType.LANG);
         } else {
             properties.descriptionId(Util.makeDescriptionId("fluid", Identifier.fromNamespaceAndPath(getOwner().getModid(), sourceName)));
         }

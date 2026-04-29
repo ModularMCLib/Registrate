@@ -54,7 +54,7 @@ public final class DataIngredient {
     private DataIngredient(Ingredient parent, Identifier id, ItemPredicate... predicates) {
         this.parent = parent;
         this.id = id;
-        this.criteriaFactory = prov -> RegistrateRecipeProvider.inventoryTrigger(predicates);
+        this.criteriaFactory = ignored -> RegistrateRecipeProvider.inventoryTrigger(predicates);
     }
 
     public Criterion<InventoryChangeTrigger.TriggerInstance> getCriterion(RegistrateRecipeProvider prov) {

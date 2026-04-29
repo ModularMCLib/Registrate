@@ -1,8 +1,10 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.providers.core.ProviderType;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
@@ -22,25 +24,27 @@ public class RegistrateItemTagsProvider extends RegistrateTagsProvider.Intrinsic
     private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap<>();
 
     public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, PackOutput output, CompletableFuture<HolderLookup.Provider> registriesLookup, CompletableFuture<TagsProvider.TagLookup<Block>> blockTags) {
-        super(owner, type, name, output, Registries.ITEM, registriesLookup, item -> item.builtInRegistryHolder().key());
+        super(owner, type, name, output, Registries.ITEM, registriesLookup, item -> BuiltInRegistries.ITEM.getResourceKey(item)
+                .orElseThrow(() -> new IllegalStateException("Cannot generate tags for unregistered item: " + item)));
         this.blockTags = blockTags;
     }
 
-    public void copy(TagKey<Block> p_206422_, TagKey<Item> p_206423_) {
-        this.tagsToCopy.put(p_206422_, p_206423_);
+    public void copy(TagKey<Block> sourceTag, TagKey<Item> targetTag) {
+        tagsToCopy.put(sourceTag, targetTag);
     }
 
     @Override
     protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
-        return super.createContentsProvider().thenCombineAsync(this.blockTags, (p_274766_, p_274767_) -> {
-            this.tagsToCopy.forEach((p_274763_, p_274764_) -> {
-                TagBuilder tagbuilder = this.getOrCreateRawBuilder(p_274764_);
-                Optional<TagBuilder> optional = p_274767_.apply(p_274763_);
-                optional.orElseThrow(() -> {
-                    return new IllegalStateException("Missing block tag " + p_274764_.location());
-                }).build().forEach(tagbuilder::add);
+        return super.createContentsProvider().thenCombineAsync(blockTags, (lookupProvider, blockTagLookup) -> {
+            tagsToCopy.forEach((sourceTag, targetTag) -> {
+                TagBuilder tagBuilder = getOrCreateRawBuilder(targetTag);
+                Optional<TagBuilder> sourceBuilder = blockTagLookup.apply(sourceTag);
+                sourceBuilder
+                        .orElseThrow(() -> new IllegalStateException("Missing block tag " + sourceTag.location()))
+                        .build()
+                        .forEach(tagBuilder::add);
             });
-            return p_274766_;
+            return lookupProvider;
         });
     }
 }

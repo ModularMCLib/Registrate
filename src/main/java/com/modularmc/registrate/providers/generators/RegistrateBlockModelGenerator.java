@@ -1,7 +1,7 @@
 package com.modularmc.registrate.providers.generators;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.providers.ProviderType;
+import com.modularmc.registrate.providers.core.ProviderType;
 
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
