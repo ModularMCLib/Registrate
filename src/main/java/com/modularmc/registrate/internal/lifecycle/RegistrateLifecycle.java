@@ -12,6 +12,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -62,15 +63,24 @@ public final class RegistrateLifecycle {
         bus.addListener(hooks::onBuildCreativeModeTabContents);
 
         // Register events fire multiple times, so clean them up on common setup.
-        OneTimeEventReceiver.addModListener(owner, FMLCommonSetupEvent.class, $ -> {
+        OneTimeEventReceiver.addModListener(owner, FMLCommonSetupEvent.class, event -> {
+            event.getClass();
             OneTimeEventReceiver.unregister(owner, onRegister, RegisterEvent.class);
             OneTimeEventReceiver.unregister(owner, onRegisterLate, RegisterEvent.class);
         });
 
         if (hooks.doDatagen()) {
-            // The current moddev datagen entrypoints use DataServer, which dispatches the
-            // server-side gather event even when `--all` is requested.
-            OneTimeEventReceiver.addModListener(owner, GatherDataEvent.Server.class, hooks::onData);
+            AtomicBoolean dataHooked = new AtomicBoolean();
+            Consumer<GatherDataEvent> onData = event -> {
+                if (dataHooked.compareAndSet(false, true)) {
+                    hooks.onData(event);
+                }
+            };
+
+            // Different moddev run types dispatch different concrete gather events.
+            // Register both and guard the callback so data providers are only attached once.
+            OneTimeEventReceiver.addModListener(owner, GatherDataEvent.Client.class, onData);
+            OneTimeEventReceiver.addModListener(owner, GatherDataEvent.Server.class, onData);
         }
     }
 }

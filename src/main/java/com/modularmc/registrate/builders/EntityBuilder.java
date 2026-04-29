@@ -20,7 +20,6 @@ import com.modularmc.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
@@ -219,6 +218,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         ItemBuilder<SpawnEggItem, EntityBuilder<T, P>> eggBuilder = getOwner()
                 .item(this, getName() + "_spawn_egg", SpawnEggItem::new)
                 .properties(properties -> properties.spawnEgg(entityType.get()))
+                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/template_spawn_egg")))
                 .tab(CreativeModeTabs.SPAWN_EGGS);
         consumer.accept(eggBuilder);
         return eggBuilder.build();

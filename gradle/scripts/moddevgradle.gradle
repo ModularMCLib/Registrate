@@ -85,8 +85,7 @@ neoForge {
         }
 
         data {
-            clientData()
-            serverData()
+            type = 'clientData'
             sourceSet = sourceSets.main
             ideName = "Data Generation"
 
@@ -99,8 +98,7 @@ neoForge {
         }
 
         Testdata {
-            clientData()
-            serverData()
+            type = 'clientData'
             sourceSet = sourceSets.test
             ideName = "Test Data Generation"
 

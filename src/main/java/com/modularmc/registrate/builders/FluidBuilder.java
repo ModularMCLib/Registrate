@@ -13,6 +13,7 @@ import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.*;
 
 import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.Registries;
@@ -65,6 +66,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     private @Nullable NonNullSupplier<Supplier<FluidModel.Unbaked>> model;
+    private @Nullable Material blockParticleTexture;
 
     private @Nullable NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension;
 
@@ -85,6 +87,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     public FluidBuilder<T, P> model(Identifier stillTexture, Identifier flowingTexture) {
+        this.blockParticleTexture = new Material(stillTexture);
         return model(() -> () -> new FluidModel.Unbaked(new Material(stillTexture), new Material(flowingTexture), null, null));
     }
 
@@ -100,7 +103,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         OneTimeEventReceiver.addModListener(getOwner(), RegisterFluidModelsEvent.class, e -> {
             NonNullSupplier<Supplier<FluidModel.Unbaked>> model = this.model;
             if (model != null) {
-                e.register(model.get().get(), getEntry());
+                NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
+                if (source != null) {
+                    e.register(model.get().get(), source.get(), getEntry());
+                } else {
+                    e.register(model.get().get(), getEntry());
+                }
             }
         });
     }
@@ -445,10 +453,17 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         final NonNullSupplier<T> supplier = asSupplier();
         final var lightLevel = Lazy.of(() -> fluidType.get().getLightLevel());
         final ToIntFunction<BlockState> lightLevelInt = $ -> lightLevel.get();
+        final Material particleTexture = this.blockParticleTexture;
         final var ret = getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
                 .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
                 .properties(p -> p.lightLevel(lightLevelInt))
-                .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
+                .blockstate(() -> (ctx, prov) -> {
+                    if (particleTexture != null) {
+                        prov.generateWithTemplate(ctx.get(), ModelTemplates.PARTICLE_ONLY, TextureMapping.particle(particleTexture));
+                    } else {
+                        prov.createNonTemplateModelBlock(ctx.get());
+                    }
+                });
         this.fluidProperties(p -> p.block(ret.asSupplier()));
         return ret;
     }

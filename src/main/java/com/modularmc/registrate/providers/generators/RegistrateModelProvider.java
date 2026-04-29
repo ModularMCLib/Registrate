@@ -3,9 +3,12 @@ package com.modularmc.registrate.providers.generators;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.core.RegistrateProvider;
 
+import com.mojang.serialization.JsonOps;
+
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.data.PackOutput;
 import net.neoforged.fml.LogicalSide;
 
@@ -20,8 +23,18 @@ public class RegistrateModelProvider extends ModelProvider implements Registrate
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        new RegistrateBlockModelGenerator(parent, blockModels.blockStateOutput, blockModels.itemModelOutput, blockModels.modelOutput).run();
+        var registrateBlockModels = new RegistrateBlockModelGenerator(parent, blockModels.blockStateOutput, blockModels.itemModelOutput, blockModels.modelOutput);
+        registrateBlockModels.run();
+        registrateBlockModels.seenBlockstates.forEach((block, dispatcher) -> validateBlockStateEncoding(block, dispatcher));
         new RegistrateItemModelGenerator(parent, itemModels.itemModelOutput, itemModels.modelOutput).run();
+    }
+
+    private static void validateBlockStateEncoding(net.minecraft.world.level.block.Block block, BlockStateModelDispatcher dispatcher) {
+        try {
+            BlockStateModelDispatcher.CODEC.encodeStart(JsonOps.INSTANCE, dispatcher);
+        } catch (RuntimeException ex) {
+            throw new IllegalStateException("Failed to encode blockstate definition for " + block.builtInRegistryHolder().key().identifier(), ex);
+        }
     }
 
     @Override

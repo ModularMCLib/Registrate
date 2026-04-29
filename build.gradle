@@ -47,7 +47,9 @@ sourceSets {
 
     clientExtra {
         compileClasspath += client.output + extra.compileClasspath
-        runtimeClasspath += client.output + client.runtimeClasspath + extra.runtimeClasspath
+        // The normal client run also mounts the test mod, so include the test source set
+        // here to keep generated test resources synchronized into build/resources/test.
+        runtimeClasspath += client.output + client.runtimeClasspath + extra.runtimeClasspath + test.output + test.runtimeClasspath
     }
 }
 
