@@ -95,13 +95,13 @@ To get an overview of the different APIs and methods, check out the [Javadocs](h
 
 ## Project Setup
 
-For this `26.1` fork, the preferred integration model is to depend on Registrate as a normal NeoForge library mod and declare it as a required dependency in your own metadata. Bundling remains possible for tightly controlled distributions, but standalone dependency loading is the default posture for this branch.
+For this `26.1` fork, the preferred integration model is to depend on RegistrateLib as a normal NeoForge library mod and declare it as a required dependency in your own metadata. Bundling remains possible for tightly controlled distributions, but standalone dependency loading is the default posture for this branch.
 
 Add the library to your Gradle dependencies:
 
 ```groovy
 dependencies {
-    implementation "com.modularmc.registrate:registrate:${registrate_version}"
+    implementation "com.modularmc.registrate:registratelib:${registratelib_version}"
 }
 ```
 
