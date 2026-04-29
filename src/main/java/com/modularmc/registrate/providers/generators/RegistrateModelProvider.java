@@ -3,14 +3,14 @@ package com.modularmc.registrate.providers.generators;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.core.RegistrateProvider;
 
-import com.mojang.serialization.JsonOps;
-
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.data.PackOutput;
 import net.neoforged.fml.LogicalSide;
+
+import com.mojang.serialization.JsonOps;
 
 public class RegistrateModelProvider extends ModelProvider implements RegistrateProvider {
 
