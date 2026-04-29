@@ -1,18 +1,19 @@
 package com.modularmc.registrate.util.entry;
 
+import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
+
 import com.modularmc.registrate.AbstractRegistrate;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 public class FluidEntry<T extends BaseFlowingFluid> extends RegistryEntry<Fluid, T> {
 

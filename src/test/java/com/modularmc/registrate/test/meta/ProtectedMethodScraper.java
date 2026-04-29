@@ -1,10 +1,5 @@
 package com.modularmc.registrate.test.meta;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -17,9 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+
 /**
- * Scrapes all protected methods from pasted source, and emits them as public super-calling stubs. Used to create the
- * bouncer classes such as BuilderModelProvider.
+ * Scrapes all protected methods from pasted source, and emits them as public super-calling stubs. Used to create the bouncer classes such as BuilderModelProvider.
  */
 public class ProtectedMethodScraper {
 
@@ -34,7 +34,7 @@ public class ProtectedMethodScraper {
         String name;
         String[] paramTypes;
         String[] paramNames;
-
+        
         public Header applyTypeReplacement(Pair<String, String> repl) {
             String[] newParamTypes = Arrays.copyOf(paramTypes, paramTypes.length);
             for (int i = 0; i < newParamTypes.length; i++) {
@@ -53,7 +53,7 @@ public class ProtectedMethodScraper {
                 base.append("@Override\n");
             }
             base.append("@Generated(value = \"").append(source.getName()).append("\", date = \"")
-                    .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now().atZone(ZoneOffset.UTC))).append("\")\n");
+                .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now().atZone(ZoneOffset.UTC))).append("\")\n");
             base.append("public ").append(isStatic ? "static " : "");
             if (generics != null) {
                 base.append(generics).append(" ");
@@ -75,7 +75,7 @@ public class ProtectedMethodScraper {
             return base.toString();
         }
 
-        // Match generics up to three levels deep -- java does not support recursive patterns
+        //                                                                                           Match generics up to three levels deep -- java does not support recursive patterns
         private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s*protected\\s+(?:(static)\\s)?\\s*(<[^<>]+(?:<[^<>]+(?:<[^<>]+>[^<>]*)*>[^<>]*)*>)?\\s*(\\S+)\\s+(\\S+)\\((.+)\\)\\s\\{$");
         private static final Pattern PARAM_PATTERN = Pattern.compile("([a-zA-Z_][\\w.$]+(?:<.+>)?)\\s+(\\S+)");
 

@@ -1,15 +1,8 @@
 package com.modularmc.registrate.test.meta;
 
-import com.modularmc.registrate.test.meta.ProtectedMethodScraper.Header;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,15 +12,24 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import com.modularmc.registrate.test.meta.ProtectedMethodScraper.Header;
+
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+
 @RequiredArgsConstructor
 public class MethodGenerator {
-
+    
     @Value
     private class Exclusion {
 
         String name;
         String[] params;
-
+        
         public boolean matches(Header header) {
             if (!header.getName().equals(this.name)) {
                 return false;
@@ -35,31 +37,31 @@ public class MethodGenerator {
             return this.params == null ? true : Arrays.equals(header.getParamTypes(), this.params);
         }
     }
-
+    
     private static final String START_KEY = "// GENERATED START";
     private static final String END_KEY = "// GENERATED END";
-
+    
     private final List<Pair<String, String>> typeReplacements;
     private final Set<Exclusion> excludes = new HashSet<>();
-
+    
     private final Class<?> mainClass;
-
+    
     public MethodGenerator(Class<?> mainClass) {
         this(ImmutableList.of(), mainClass);
     }
-
+    
     public MethodGenerator exclude(String name) {
         excludes.add(new Exclusion(name, null));
         return this;
     }
-
+    
     public MethodGenerator exclude(String name, String... paramTypes) {
         excludes.add(new Exclusion(name, paramTypes));
         return this;
     }
 
     public void generate(Path output) throws IOException {
-        List<String> currentSource = Files.readAllLines(output, Charsets.UTF_8);
+        List<String> currentSource = Files.readAllLines(output, StandardCharsets.UTF_8);
         List<Header> newHeaders = ProtectedMethodScraper.scrapeInput();
         ListIterator<Header> headerItr = newHeaders.listIterator();
         while (headerItr.hasNext()) {

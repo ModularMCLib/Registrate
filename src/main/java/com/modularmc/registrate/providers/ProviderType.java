@@ -1,15 +1,9 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
-import com.modularmc.registrate.providers.generators.RegistrateBlockModelGenerator;
-import com.modularmc.registrate.providers.generators.RegistrateItemModelGenerator;
-import com.modularmc.registrate.providers.generators.RegistrateModelProvider;
-import com.modularmc.registrate.providers.generators.RegistrateRecipeProvider;
-import com.modularmc.registrate.providers.generators.RegistrateRecipeRunner;
+import com.modularmc.registrate.providers.generators.*;
 import com.modularmc.registrate.providers.loot.RegistrateLootTableProvider;
-import com.modularmc.registrate.util.nullness.FieldsAreNonnullByDefault;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -23,28 +17,23 @@ import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
-import com.tterrag.registrate.providers.generators.*;
-
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Represents a type of data that can be generated, and specifies a factory for the provider.
  * <p>
  * Used as a key for data generator callbacks.
  * <p>
- * This file also defines the built-in provider types, but third-party types can be created with
- * {@link #registerProvider(String, ProviderType)}.
+ * This file also defines the built-in provider types, but third-party types can be created with {@link #registerProvider(String, ProviderType)}.
  *
  * @param <T> The type of the provider
  */
 @FunctionalInterface
 @SuppressWarnings("deprecation")
-@FieldsAreNonnullByDefault
 @ParametersAreNonnullByDefault
 public interface ProviderType<T extends RegistrateProvider> extends GeneratorType<T> {
 
@@ -59,7 +48,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerTag("tags/item", Registries.ITEM, c -> new RegistrateItemTagsProvider(c.parent(), c.type(), "items", c.output(), c.provider(), c.get(BLOCK_TAGS).contentsGetter()));
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Fluid>> FLUID_TAGS = registerIntrinsicTag("tags/fluid", "fluids", Registries.FLUID, fluid -> fluid.builtInRegistryHolder().key());
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>> ENTITY_TAGS = registerIntrinsicTag("tags/entity", "entity_types", Registries.ENTITY_TYPE, entityType -> entityType.builtInRegistryHolder().key());
-    ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider", c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
+    ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
 
     // CLIENT DATA
     ProviderType<RegistrateModelProvider> MODEL = registerClientProvider("model", () -> c -> new RegistrateModelProvider(c.parent(), c.output()));
@@ -79,14 +68,14 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         public <R extends RegistrateProvider> R get(ProviderType<R> other) {
             return (R) existing().get(other);
         }
+
     }
 
     T create(Context<T> context);
 
     default <R> GeneratorType<R> createGenerator(String type) {
         return new GeneratorType<>() {
-
-            public String toString() {
+            public String toString(){
                 return type;
             }
         };
@@ -104,6 +93,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         default ProviderType<T> asProvider() {
             return this;
         }
+
     }
 
     @Nonnull
@@ -148,4 +138,5 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     static <T extends RegistrateProvider> T create(ProviderType<T> type, AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing, CompletableFuture<HolderLookup.Provider> provider) {
         return type.create(new Context<>(type, parent, event, existing, event.getGenerator().getPackOutput(), provider));
     }
+
 }

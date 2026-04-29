@@ -1,5 +1,6 @@
 package com.modularmc.registrate.builders;
 
+import com.google.common.collect.Maps;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.DataGenContext;
 import com.modularmc.registrate.providers.GeneratorType;
@@ -16,7 +17,6 @@ import com.modularmc.registrate.util.nullness.NonNullBiConsumer;
 import com.modularmc.registrate.util.nullness.NonNullFunction;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 import com.modularmc.registrate.util.nullness.NonNullUnaryOperator;
-
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -31,18 +31,14 @@ import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 
-import com.google.common.collect.Maps;
-
+import org.jspecify.annotations.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 /**
- * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated
- * with items (models, recipes, etc.).
+ * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
  *
  * @param <T>
  *            The type of item being built
@@ -52,8 +48,7 @@ import javax.annotation.Nullable;
 public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, ItemBuilder<T, P>> {
 
     /**
-     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that
-     * alternate initialization strategies can be done in subclasses.
+     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
      * The item will be assigned the following data:
      * <ul>
@@ -62,19 +57,19 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * </ul>
      *
      * @param <T>
-     *                 The type of the builder
+     *            The type of the builder
      * @param <P>
-     *                 Parent object type
+     *            Parent object type
      * @param owner
-     *                 The owning {@link AbstractRegistrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
-     *                 The parent object
+     *            The parent object
      * @param name
-     *                 Name of the entry being built
+     *            Name of the entry being built
      * @param callback
-     *                 A callback used to actually register the built entry
+     *            A callback used to actually register the built entry
      * @param factory
-     *                 Factory to create the item
+     *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
@@ -100,14 +95,13 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Modify the properties of the item. Modifications are done lazily, but the passed function is composed with the
-     * current one, and as such this method can be called multiple times to perform
+     * Modify the properties of the item. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
      * <p>
      * If a different properties instance is returned, it will replace the existing one entirely.
      *
      * @param func
-     *             The action to perform on the properties
+     *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> properties(NonNullUnaryOperator<Item.Properties> func) {
@@ -116,11 +110,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Replace the initial state of the item properties, without replacing or removing any modifications done via
-     * {@link #properties(NonNullUnaryOperator)}.
+     * Replace the initial state of the item properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      *
      * @param properties
-     *                   A supplier to to create the initial properties
+     *            A supplier to to create the initial properties
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
@@ -129,21 +122,17 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created
-     * and/or added to the tab.
+     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
      *
      * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the
-     * {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
-     * This means you can call this method as many times as you like during the build process with no added side
-     * effects.
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
      * <p>
      * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
      * <p>
-     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier
-     * for that tab.
+     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
      *
-     * @param tab      A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
      * @param modifier A {@link Consumer consumer} accepting a {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
      * @deprecated Use {@link #tab(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
@@ -154,39 +143,30 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created
-     * and/or added to the tab.
+     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
      *
      * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the
-     * {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
-     * This means you can call this method as many times as you like during the build process with no added side
-     * effects.
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
      * <p>
      * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
      * <p>
-     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier
-     * for that tab.
+     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
      *
-     * @param tab      A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
-     * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and
-     *                 {@link CreativeModeTabModifier} used to update the tab
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
+     * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
-        creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and
-                                             // .andThen() the 2 together? right now we replace any consumer that
-                                             // currently exists
+        creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
 
     /**
      * Adds the item built from this builder into the given CreativeModeTab using the default ItemStack instance.
      * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the
-     * {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
-     * This means you can call this method as many times as you like during the build process with no added side
-     * effects.
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
      * <p>
      * Calling this method with different {@link ResourceKey tab keys} will add the item to all the specified tabs.
      * <p>
@@ -226,7 +206,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Configure the model for this item.
      *
      * @param cons
-     *             The callback which will be invoked during data creation
+     *            The callback which will be invoked during data creation
      * @return this {@link ItemBuilder}
      * @see #setData(GeneratorType, NonNullBiConsumer)
      */
@@ -236,9 +216,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Assign the default translation, as specified by
-     * {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, net.minecraft.resources.ResourceKey)}. This is
-     * the default, so it is generally
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, net.minecraft.resources.ResourceKey)}. This is the default, so it is generally
      * not necessary to call, unless for undoing previous changes.
      *
      * @return this {@link ItemBuilder}
@@ -251,7 +229,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Set the translation for this item.
      *
      * @param name
-     *             A localized English name
+     *            A localized English name
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> lang(String name) {
@@ -262,7 +240,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Configure the recipe(s) for this item.
      *
      * @param cons
-     *             The callback which will be invoked during data generation.
+     *            The callback which will be invoked during data generation.
      * @return this {@link ItemBuilder}
      * @see #setData(GeneratorType, NonNullBiConsumer)
      */
@@ -272,7 +250,6 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     /**
      * Add burn time for the item
-     *
      * @param tick time in ticks for this item to burn in furnace.
      */
     public ItemBuilder<T, P> burnTime(int tick) {
@@ -281,22 +258,19 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     /**
      * Add compost chance for the item
-     *
      * @param chance chance for composter to increase one level when composting this item.
      */
     public ItemBuilder<T, P> compostable(float chance) {
         return dataMap(NeoForgeDataMaps.COMPOSTABLES, new Compostable(chance));
     }
 
-    @Nullable
-    private Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
+    private @Nullable Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
 
     /**
-     * Register a client extension for this item. The {@link IClientItemExtensions} instance can be shared across many
-     * items.
+     * Register a client extension for this item. The {@link IClientItemExtensions} instance can be shared across many items.
      *
      * @param clientExtension
-     *                        The client extension to register for this item
+     *            The client extension to register for this item
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension) {
@@ -329,7 +303,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Assign {@link TagKey}{@code s} to this item. Multiple calls will add additional tags.
      *
      * @param tags
-     *             The tag to assign
+     *            The tag to assign
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs

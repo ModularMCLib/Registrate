@@ -1,5 +1,14 @@
 package com.modularmc.registrate.builders;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import org.jspecify.annotations.Nullable;
+
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.util.OneTimeEventReceiver;
 import com.modularmc.registrate.util.RegistrateDistExecutor;
@@ -22,17 +31,9 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 /**
  * A builder for block entities, allows for customization of the valid blocks.
- *
+ * 
  * @param <T>
  *            The type of block entity being built
  * @param <P>
@@ -43,28 +44,28 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     public interface BlockEntityFactory<T extends BlockEntity> {
 
         public T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
+
     }
 
     /**
-     * Create a new {@link BlockEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor,
-     * so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link BlockEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
      * The block entity will be assigned the following data:
-     *
+     * 
      * @param <T>
-     *                 The type of the builder
+     *            The type of the builder
      * @param <P>
-     *                 Parent object type
+     *            Parent object type
      * @param owner
-     *                 The owning {@link AbstractRegistrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
-     *                 The parent object
+     *            The parent object
      * @param name
-     *                 Name of the entry being built
+     *            Name of the entry being built
      * @param callback
-     *                 A callback used to actually register the built entry
+     *            A callback used to actually register the built entry
      * @param factory
-     *                 Factory to create the block entity
+     *            Factory to create the block entity
      * @return A new {@link BlockEntityBuilder} with reasonable default data generators.
      */
     public static <T extends BlockEntity, P> BlockEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
@@ -73,31 +74,30 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
 
     private final BlockEntityFactory<T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
-    @Nullable
-    private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
+    private @Nullable NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T, ?>>> renderer;
 
     protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
         super(owner, parent, name, callback, Registries.BLOCK_ENTITY_TYPE);
         this.factory = factory;
     }
-
+    
     /**
      * Add a valid block for this block entity.
-     *
+     * 
      * @param block
-     *              A supplier for the block to add at registration time
+     *            A supplier for the block to add at registration time
      * @return this {@link BlockEntityBuilder}
      */
     public BlockEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
         return this;
     }
-
+    
     /**
      * Add valid blocks for this block entity.
-     *
+     * 
      * @param blocks
-     *               An array of suppliers for the block to add at registration time
+     *            An array of suppliers for the block to add at registration time
      * @return this {@link BlockEntityBuilder}
      */
     @SafeVarargs
@@ -105,27 +105,25 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
         Arrays.stream(blocks).forEach(this::validBlock);
         return this;
     }
-
+    
     /**
      * Register an {@link BlockEntityRenderer} for this block entity.
      * <p>
-     *
-     * @apiNote This requires the {@link Class} of the block entity object, which can only be gotten by inspecting an
-     *          instance of it. Thus, the entity will be constructed to register the renderer.
-     *
+     * 
+     * @apiNote This requires the {@link Class} of the block entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed to register the renderer.
+     * 
      * @param renderer
-     *                 A (server safe) supplier to an {@link Function} that will provide this block entity's renderer
-     *                 given the renderer dispatcher
+     *            A (server safe) supplier to an {@link Function} that will provide this block entity's renderer given the renderer dispatcher
      * @return this {@link BlockEntityBuilder}
      */
-    public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
+    public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T, ?>>> renderer) {
         if (this.renderer == null) { // First call only
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
         this.renderer = renderer;
         return this;
     }
-
+    
     protected void registerRenderer() {
         OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
             var renderer = this.renderer;

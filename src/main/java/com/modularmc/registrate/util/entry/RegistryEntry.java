@@ -1,5 +1,9 @@
 package com.modularmc.registrate.util.entry;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 
@@ -7,19 +11,13 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-
 /**
- * Wraps a {@link net.neoforged.neoforge.registries.DeferredHolder}, providing a cleaner API with null-safe access, and
- * registrate-specific extensions such as {@link #getSibling(ResourceKey)}.
+ * Wraps a {@link net.neoforged.neoforge.registries.DeferredHolder}, providing a cleaner API with null-safe access, and registrate-specific extensions such as {@link #getSibling(ResourceKey)}.
  *
  * @param <S>
  *            The type of the entry
  */
 public class RegistryEntry<R, S extends R> extends DeferredHolder<R, S> implements NonNullSupplier<S> {
-
     private final AbstractRegistrate<?> owner;
 
     @SuppressWarnings("unused")
@@ -35,20 +33,18 @@ public class RegistryEntry<R, S extends R> extends DeferredHolder<R, S> implemen
         return owner.get(getId().getPath(), registryType);
     }
 
-    public <X, Y extends X> RegistryEntry<X, Y> getSibling(Registry<X> registry) {
+    public <X, Y extends X> RegistryEntry<X,Y> getSibling(Registry<X> registry) {
         return getSibling(registry.key());
     }
 
     /**
-     * If an entry is present, and the entry matches the given predicate, return an {@link Optional<RegistryEntry>}
-     * describing the value, otherwise return an empty {@link Optional}.
+     * If an entry is present, and the entry matches the given predicate, return an {@link Optional<RegistryEntry>} describing the value, otherwise return an empty {@link Optional}.
      *
      * @param predicate
-     *                  a {@link Predicate predicate} to apply to the entry, if present
-     * @return an {@link RegistryEntry} describing the value of this {@link RegistryEntry} if the entry is present and
-     *         matches the given predicate, otherwise an empty {@link RegistryEntry}
+     *            a {@link Predicate predicate} to apply to the entry, if present
+     * @return an {@link RegistryEntry} describing the value of this {@link RegistryEntry} if the entry is present and matches the given predicate, otherwise an empty {@link RegistryEntry}
      * @throws NullPointerException
-     *                              if the predicate is null
+     *             if the predicate is null
      */
     public Optional<RegistryEntry<R, S>> filter(Predicate<R> predicate) {
         Objects.requireNonNull(predicate);

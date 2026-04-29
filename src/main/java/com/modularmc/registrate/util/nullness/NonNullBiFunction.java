@@ -3,8 +3,8 @@ package com.modularmc.registrate.util.nullness;
 import java.util.function.BiFunction;
 
 @FunctionalInterface
-public interface NonNullBiFunction<@NonnullType T, @NonnullType U, @NonnullType R> extends BiFunction<T, U, R> {
-
+public interface NonNullBiFunction<T, U, R> extends BiFunction<T, U, R> {
+    
     @Override
     R apply(T t, U u);
 }

@@ -1,35 +1,26 @@
 package com.modularmc.registrate;
 
-import com.modularmc.registrate.builders.BlockBuilder;
-import com.modularmc.registrate.builders.BlockEntityBuilder;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.*;
+import com.mojang.serialization.Codec;
+import com.modularmc.registrate.builders.*;
 import com.modularmc.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.modularmc.registrate.builders.Builder;
-import com.modularmc.registrate.builders.BuilderCallback;
-import com.modularmc.registrate.builders.EntityBuilder;
-import com.modularmc.registrate.builders.FluidBuilder;
-import com.modularmc.registrate.builders.ItemBuilder;
-import com.modularmc.registrate.builders.MenuBuilder;
 import com.modularmc.registrate.builders.MenuBuilder.ForgeMenuFactory;
 import com.modularmc.registrate.builders.MenuBuilder.MenuFactory;
 import com.modularmc.registrate.builders.MenuBuilder.ScreenFactory;
-import com.modularmc.registrate.builders.NoConfigBuilder;
-import com.modularmc.registrate.providers.DataProviderInitializer;
-import com.modularmc.registrate.providers.GeneratorType;
-import com.modularmc.registrate.providers.ProviderType;
-import com.modularmc.registrate.providers.RegistrateDataProvider;
-import com.modularmc.registrate.providers.RegistrateLangProvider;
+import com.modularmc.registrate.providers.*;
 import com.modularmc.registrate.util.CreativeModeTabModifier;
 import com.modularmc.registrate.util.DebugMarkers;
 import com.modularmc.registrate.util.OneTimeEventReceiver;
 import com.modularmc.registrate.util.entry.ItemEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
-import com.modularmc.registrate.util.nullness.NonNullBiFunction;
-import com.modularmc.registrate.util.nullness.NonNullConsumer;
-import com.modularmc.registrate.util.nullness.NonNullFunction;
-import com.modularmc.registrate.util.nullness.NonNullSupplier;
-import com.modularmc.registrate.util.nullness.NonNullUnaryOperator;
-import com.modularmc.registrate.util.nullness.NonnullType;
-
+import com.modularmc.registrate.util.nullness.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Value;
+import lombok.experimental.Accessors;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -51,27 +42,18 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.*;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
-import com.mojang.serialization.Codec;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Value;
-import lombok.experimental.Accessors;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
 
+import org.jspecify.annotations.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -79,24 +61,18 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
  * Manages all registrations and data generators for a mod.
  * <p>
- * Generally <em>not</em> thread-safe, as it holds the current name of the object being built statefully, and uses
- * non-concurrent collections.
+ * Generally <em>not</em> thread-safe, as it holds the current name of the object being built statefully, and uses non-concurrent collections.
  * <p>
- * Begin a new object via {@link #object(String)}. This name will be used for all future entries until the next
- * invocation of {@link #object(String)}. Alternatively, the methods that accept a name
+ * Begin a new object via {@link #object(String)}. This name will be used for all future entries until the next invocation of {@link #object(String)}. Alternatively, the methods that accept a name
  * parameter (such as {@link #block(String, NonNullFunction)}) can be used. These do not affect the current name state.
  * <p>
  * A simple use may look like:
  *
  * <pre>
  * {@code
- *
  * public static final Registrate REGISTRATE = Registrate.create("mymod");
  *
  * public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
@@ -113,7 +89,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     @Value
     private class Registration<R, T extends R> {
-
         Identifier name;
         ResourceKey<? extends Registry<R>> type;
         NonNullSupplier<? extends T> creator;
@@ -125,7 +100,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         Registration(Identifier name, ResourceKey<? extends Registry<R>> type, NonNullSupplier<? extends T> creator, NonNullFunction<DeferredHolder<R, T>, ? extends RegistryEntry<R, T>> entryFactory) {
             this.name = name;
             this.type = type;
-            this.creator = creator.lazy();
+            this.creator =  creator.lazy();
             this.delegate = entryFactory.apply(DeferredHolder.create(type, name));
         }
 
@@ -145,24 +120,21 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Checks if Minecraft is running from a dev environment. Enables certain debug logging.
      *
-     * @return {@code true} when in a dev environment (specifically, {@link FMLLoader#isProduction()} == false)
+     * @return {@code true} when in a dev environment (specifically, {@link FMLEnvironment#isProduction()} == false)
      */
     public static boolean isDevEnvironment() {
-        return !FMLLoader.isProduction();
+        return !FMLEnvironment.isProduction();
     }
 
     private final Table<ResourceKey<? extends Registry<?>>, String, Registration<?, ?>> registrations = HashBasedTable.create();
-    /**
-     * Expected to be emptied by the time registration occurs, is emptied by
-     * {@link #accept(String, ResourceKey, Builder, NonNullSupplier, NonNullFunction)}
-     */
+    /** Expected to be emptied by the time registration occurs, is emptied by {@link #accept(String, ResourceKey, Builder, NonNullSupplier, NonNullFunction)} */
     private final Multimap<Pair<String, ResourceKey<? extends Registry<?>>>, NonNullConsumer<?>> registerCallbacks = HashMultimap.create();
     /** Entry-less callbacks that are invoked after the registry type has completely finished */
     private final Multimap<ResourceKey<? extends Registry<?>>, Runnable> afterRegisterCallbacks = HashMultimap.create();
     private final Set<ResourceKey<? extends Registry<?>>> completedRegistrations = new HashSet<>();
 
     private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, GeneratorType<?>, Consumer<?>> datagensByEntry = HashBasedTable.create();
-    private final ListMultimap<GeneratorType<?>, @NonnullType NonNullConsumer<?>> datagens = ArrayListMultimap.create();
+    private final ListMultimap<GeneratorType<?>, NonNullConsumer<?>> datagens = ArrayListMultimap.create();
     private final Multimap<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = ArrayListMultimap.create();
     private ResourceKey<CreativeModeTab> defaultCreativeModeTab = CreativeModeTabs.SEARCH;
 
@@ -177,23 +149,19 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final String modid;
 
     /**
-     * Get the mod event bus that event listeners will be registered to. Useful when Registrate is used in mods that use
-     * alternative language loaders, such as forgelin.
+     * Get the mod event bus that event listeners will be registered to. Useful when Registrate is used in mods that use alternative language loaders, such as forgelin.
      */
-    @Getter
-    @Setter
-    @Nullable
-    private IEventBus modEventBus;
+    @Getter @Setter
+    private @Nullable IEventBus modEventBus;
 
-    @Nullable
-    private String currentName;
+    private @Nullable String currentName;
     private boolean skipErrors;
 
     /**
      * Construct a new Registrate for the given mod ID.
      *
      * @param modid
-     *              The mod ID for which objects will be registered
+     *            The mod ID for which objects will be registered
      */
     protected AbstractRegistrate(String modid) {
         this.modid = modid;
@@ -210,8 +178,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Called during {@link Registrate#create(String) creation} to initialize event listeners. Custom implementations
-     * may add their own event listeners by overriding this.
+     * Called during {@link Registrate#create(String) creation} to initialize event listeners. Custom implementations may add their own event listeners by overriding this.
      * <p>
      * <i>Always</i> call {@code super} in your override unless you know what you are doing!
      *
@@ -228,9 +195,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         Consumer<RegisterEvent> onRegisterLate = this::onRegisterLate;
         bus.addListener(onRegister);
         bus.addListener(EventPriority.LOWEST, onRegisterLate);
-        bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents
-                                                               // rebuilt (changing op tab perms for example)
-
+        bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents rebuilt (changing op tab perms for example)
+        
         // Register events fire multiple times, so clean them up on common setup
         OneTimeEventReceiver.addModListener(this, FMLCommonSetupEvent.class, $ -> {
             OneTimeEventReceiver.unregister(this, onRegister, RegisterEvent.class);
@@ -245,22 +211,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Called once per registry to gather collected registrations and add entries to the registry. May be overriden in
-     * custom implementations to perform additional actions upon entry registration, but
+     * Called once per registry to gather collected registrations and add entries to the registry. May be overriden in custom implementations to perform additional actions upon entry registration, but
      * <i>must</i> call {@code super}.
-     *
+     * 
      * @param event
-     *              The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the
-     *              registry type
+     *            The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the registry type
      */
     protected void onRegister(RegisterEvent event) {
         ResourceKey<? extends Registry<?>> type = event.getRegistryKey();
         if (type == null) {
-            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistryKey().location());
+            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistryKey().identifier());
             return;
         }
         if (!registerCallbacks.isEmpty()) {
-            registerCallbacks.asMap().forEach((k, v) -> log.warn("Found {} unused register callback(s) for entry {} [{}]. Was the entry ever registered?", v.size(), k.getLeft(), k.getRight().location()));
+            registerCallbacks.asMap().forEach((k, v) -> log.warn("Found {} unused register callback(s) for entry {} [{}]. Was the entry ever registered?", v.size(), k.getLeft(), k.getRight().identifier()));
             registerCallbacks.clear();
             if (isDevEnvironment()) {
                 throw new IllegalStateException("Found unused register callbacks, see logs");
@@ -268,13 +232,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.row(type);
         if (registrationsForType.size() > 0) {
-            log.trace(DebugMarkers.REGISTER, "({}) Registering {} known objects of type {}", getModid(), registrationsForType.size(), type.location());
+            log.trace(DebugMarkers.REGISTER, "({}) Registering {} known objects of type {}", getModid(), registrationsForType.size(), type.identifier());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
                 try {
                     e.getValue().register(event);
-                    log.trace(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey().location());
+                    log.trace(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey().identifier());
                 } catch (Exception ex) {
-                    String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey().location();
+                    String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey().identifier();
                     if (skipErrors) {
                         log.error(DebugMarkers.REGISTER, err);
                     } else {
@@ -286,14 +250,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Called once per registry at the {@link EventPriority#LOWEST lowest priority} to perform any actions that must
-     * happen after all other entries have been registered, including from other mods. May
-     * be overriden in custom implementations to perform additional actions upon entry registration, but <i>must</i>
-     * call {@code super}.
-     *
+     * Called once per registry at the {@link EventPriority#LOWEST lowest priority} to perform any actions that must happen after all other entries have been registered, including from other mods. May
+     * be overriden in custom implementations to perform additional actions upon entry registration, but <i>must</i> call {@code super}.
+     * 
      * @param event
-     *              The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the
-     *              registry type
+     *            The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the registry type
      */
     protected void onRegisterLate(RegisterEvent event) {
         ResourceKey<? extends Registry<?>> type = event.getRegistryKey();
@@ -304,28 +265,26 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Called when a {@link CreativeModeTab} is being populated to fill in any entries that belong there. Can be
-     * overriden in custom implementations.
-     *
+     * Called when a {@link CreativeModeTab} is being populated to fill in any entries that belong there. Can be overriden in custom implementations.
+     * 
      * @param event
-     *              The event
+     *            The event
      */
     protected void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
         var modifier = new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters);
 
         creativeModeTabModifiers.forEach((key, value) -> {
-            if (event.getTabKey().equals(key)) value.accept(modifier);
+            if(event.getTabKey().equals(key)) value.accept(modifier);
         });
     }
 
-    @Nullable
-    private RegistrateDataProvider provider;
+    private @Nullable RegistrateDataProvider provider;
 
     /**
      * Called when datagen begins to add our provider to the generator. Can be overriden in custom implementations.
-     *
+     * 
      * @param event
-     *              The event
+     *            The event
      */
     protected void onData(GatherDataEvent event) {
         event.getGenerator().addProvider(true, provider = new RegistrateDataProvider(this, modid, event));
@@ -336,7 +295,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *
      * @return The current entry name
      * @throws NullPointerException
-     *                              if {@link #currentName} is null
+     *             if {@link #currentName} is null
      */
     protected String currentName() {
         String name = currentName;
@@ -345,41 +304,38 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Allows retrieval of a previously created entry, of the current name (from the last invocation of
-     * {@link #object(String)}. Useful to retrieve a different entry than the final state of your
+     * Allows retrieval of a previously created entry, of the current name (from the last invocation of {@link #object(String)}. Useful to retrieve a different entry than the final state of your
      * chain may produce, e.g.
      *
      * <pre>
      * {@code
-     *
      * public static final RegistryObject<BlockItem> MY_BLOCK_ITEM = REGISTRATE.object("my_block")
      *         .block(MyBlock::new)
-     *         .defaultItem()
-     *         .lang("My Special Block")
-     *         .build()
+     *             .defaultItem()
+     *             .lang("My Special Block")
+     *             .build()
      *         .get(Item.class);
      * }
      * </pre>
      *
      * @param <R>
-     *             The type of the registry for which to retrieve the entry
+     *            The type of the registry for which to retrieve the entry
      * @param <T>
-     *             The type of the entry to return
+     *            The type of the entry to return
      * @param type
-     *             A {@link ResourceKey} for the registry
+     *            A {@link ResourceKey} for the registry 
      * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
-     *                                  if no such registration has been done
+     *             if no such registration has been done
      * @throws NullPointerException
-     *                                  if current name has not been set via {@link #object(String)}
+     *             if current name has not been set via {@link #object(String)}
      */
     public <R, T extends R> RegistryEntry<R, T> get(ResourceKey<? extends Registry<R>> type) {
         return this.<R, T>get(currentName(), type);
     }
 
     /**
-     * Allows retrieval of a previously created entry. Useful to retrieve arbitrary entries that may have been created
-     * as side-effects of earlier registrations.
+     * Allows retrieval of a previously created entry. Useful to retrieve arbitrary entries that may have been created as side-effects of earlier registrations.
      *
      * <pre>
      * {@code
@@ -395,33 +351,32 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * </pre>
      *
      * @param <R>
-     *             The type of the registry for which to retrieve the entry
+     *            The type of the registry for which to retrieve the entry
      * @param <T>
-     *             The type of the entry to return
+     *            The type of the entry to return
      * @param name
-     *             The name of the registry entry to request
+     *            The name of the registry entry to request
      * @param type
-     *             A {@link ResourceKey} for the registry
+     *            A {@link ResourceKey} for the registry
      * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
-     *                                  if no such registration has been done
+     *             if no such registration has been done
      */
     public <R, T extends R> RegistryEntry<R, T> get(String name, ResourceKey<? extends Registry<R>> type) {
         return this.<R, T>getRegistration(name, type).getDelegate();
     }
 
     /**
-     * Allows retrieval of a previously created entry that may or may not exist. Possibly useful in some very specific
-     * scenarios, internally used during fluid registration.
+     * Allows retrieval of a previously created entry that may or may not exist. Possibly useful in some very specific scenarios, internally used during fluid registration.
      *
      * @param <R>
-     *             The type of the registry for which to retrieve the entry
+     *            The type of the registry for which to retrieve the entry
      * @param <T>
-     *             The type of the entry to return
+     *            The type of the entry to return
      * @param name
-     *             The name of the registry entry to request
+     *            The name of the registry entry to request
      * @param type
-     *             A class representing the registry type
+     *            A class representing the registry type
      * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      */
     public <R, T extends R> Optional<RegistryEntry<R, T>> getOptional(String name, ResourceKey<? extends Registry<R>> type) {
@@ -430,8 +385,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     @SuppressWarnings("unchecked")
-    @Nullable
-    private <R, T extends R> Registration<R, T> getRegistrationUnchecked(String name, ResourceKey<? extends Registry<R>> type) {
+    private <R, T extends R> @Nullable Registration<R, T> getRegistrationUnchecked(String name, ResourceKey<? extends Registry<R>> type) {
         return (Registration<R, T>) registrations.get(type, name);
     }
 
@@ -440,21 +394,19 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         if (reg != null) {
             return reg;
         }
-        throw new IllegalArgumentException("Unknown registration " + name + " for type " + type.location());
+        throw new IllegalArgumentException("Unknown registration " + name + " for type " + type.identifier());
     }
 
     /**
      * Gather a collection of all entries registered for a certain registry
      * <p>
-     * Note that this can be called before registration is complete, but the {@link RegistryEntry entries} will be empty
-     * at that time.
-     *
+     * Note that this can be called before registration is complete, but the {@link RegistryEntry entries} will be empty at that time.
+     * 
      * @param <R>
-     *             Registry type
+     *            Registry type
      * @param type
-     *             A {@link ResourceKey} for the registry in question
-     * @return A collection of {@link RegistryEntry} objects representing all entries in the given registry which are
-     *         known to this {@link AbstractRegistrate} object.
+     *            A {@link ResourceKey} for the registry in question
+     * @return A collection of {@link RegistryEntry} objects representing all entries in the given registry which are known to this {@link AbstractRegistrate} object.
      */
     @SuppressWarnings({ "null", "unchecked" })
     public <R, T extends R> Collection<RegistryEntry<R, T>> getAll(ResourceKey<? extends Registry<R>> type) {
@@ -462,20 +414,18 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Add a callback to be invoked when a certain entry has been registered. This will be invoked <i>immediately</i>
-     * following registration, before further entries are registered.
-     *
+     * Add a callback to be invoked when a certain entry has been registered. This will be invoked <i>immediately</i> following registration, before further entries are registered.
+     * 
      * @param <R>
-     *                     Registry type
+     *            Registry type
      * @param <T>
-     *                     Entry type
+     *            Entry type
      * @param name
-     *                     The name of the entry to watch (implicitly within the {@link #getModid() modid} of this
-     *                     instance
+     *            The name of the entry to watch (implicitly within the {@link #getModid() modid} of this instance
      * @param registryType
-     *                     A {@link ResourceKey} for the registry in question
+     *            A {@link ResourceKey} for the registry in question
      * @param callback
-     *                     The callback to invoke, which will be passed the created entry object
+     *            The callback to invoke, which will be passed the created entry object
      * @return This {@link AbstractRegistrate} instance
      */
     public <R, T extends R> S addRegisterCallback(String name, ResourceKey<? extends Registry<R>> registryType, NonNullConsumer<? super T> callback) {
@@ -489,15 +439,14 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Add a callback to be invoked when a certain registry has fully completed registration, i.e. all objects of that
-     * type have been registered.
-     *
+     * Add a callback to be invoked when a certain registry has fully completed registration, i.e. all objects of that type have been registered.
+     * 
      * @param <R>
-     *                     The registry type
+     *            The registry type
      * @param registryType
-     *                     A {@link ResourceKey} for the registry in question
+     *            A {@link ResourceKey} for the registry in question
      * @param callback
-     *                     The callback to invoke
+     *            The callback to invoke
      * @return This {@link AbstractRegistrate} instance
      */
     public <R> S addRegisterCallback(ResourceKey<? extends Registry<R>> registryType, Runnable callback) {
@@ -507,11 +456,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Check if a certain registry has completed registration.
-     *
+     * 
      * @param <R>
-     *                     The registry type
+     *            The registry type
      * @param registryType
-     *                     A {@link ResourceKey} for the registry in question
+     *            A {@link ResourceKey} for the registry in question
      * @return {@code true} iff the given registry has finished the registration step
      */
     public <R> boolean isRegistered(ResourceKey<? extends Registry<R>> registryType) {
@@ -519,17 +468,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Get the data provider instance for a given {@link GeneratorType}. Only works within datagen context, not during
-     * registration or init.
+     * Get the data provider instance for a given {@link GeneratorType}. Only works within datagen context, not during registration or init.
      *
      * @param <P>
-     *             The type of the provider
+     *            The type of the provider
      * @param type
-     *             A {@link GeneratorType} representing the desired provider
-     * @return An {@link Optional} holding the provider, or empty if this provider was not registered. This can happen
-     *         if datagen is run only for client or server providers.
+     *            A {@link GeneratorType} representing the desired provider
+     * @return An {@link Optional} holding the provider, or empty if this provider was not registered. This can happen if datagen is run only for client or server providers.
      * @throws IllegalStateException
-     *                               if datagen has not started yet
+     *             if datagen has not started yet
      */
     public <P> Optional<P> getDataProvider(GeneratorType<P> type) {
         RegistrateDataProvider provider = this.provider;
@@ -540,19 +487,18 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data
-     * gen callback if it exists.
+     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data gen callback if it exists.
      *
      * @param <P>
-     *                The type of provider
+     *            The type of provider
      * @param <R>
-     *                The registry type
+     *            The registry type
      * @param builder
-     *                The builder for the entry
+     *            The builder for the entry
      * @param type
-     *                The {@link GeneratorType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
-     *                A callback to be invoked during data generation
+     *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
     public <P, R> S setDataGenerator(Builder<R, ?, ?, ?> builder, GeneratorType<? extends P> type, NonNullConsumer<? extends P> cons) {
@@ -560,21 +506,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data
-     * gen callback if it exists.
+     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data gen callback if it exists.
      *
      * @param <P>
-     *                     The type of provider
+     *            The type of provider
      * @param <R>
-     *                     The registry type
+     *            The registry type
      * @param entry
-     *                     The name of the entry which the provider is for
+     *            The name of the entry which the provider is for
      * @param registryType
-     *                     A {@link Class} representing the registry type of the entry
+     *            A {@link Class} representing the registry type of the entry
      * @param type
-     *                     The {@link GeneratorType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
-     *                     A callback to be invoked during data generation
+     *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
     public <P, R> S setDataGenerator(String entry, ResourceKey<? extends Registry<R>> registryType, GeneratorType<? extends P> type, NonNullConsumer<? extends P> cons) {
@@ -588,17 +533,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Add a data generator callback that is not associated with any entry, which can never replace an existing data
-     * generator.
+     * Add a data generator callback that is not associated with any entry, which can never replace an existing data generator.
      * <p>
      * This is useful to add data generator callbacks for miscellaneous data not strictly associated with an entry.
      *
      * @param <T>
-     *             The type of provider
+     *            The type of provider
      * @param type
-     *             The {@link GeneratorType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
-     *             A callback to be invoked during data generation
+     *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
     public <T> S addDataGenerator(GeneratorType<? extends T> type, NonNullConsumer<? extends T> cons) {
@@ -609,8 +553,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
-    @Nullable
-    private DataProviderInitializer initializer;
+    private @Nullable DataProviderInitializer initializer;
 
     /**
      * Access datapack registry and data provider dependency settings
@@ -632,13 +575,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Add a custom translation mapping using the vanilla style of Identifier -&gt; translation key conversion.
      *
      * @param type
-     *                      Type of the object, this is used as a prefix (e.g.
-     *                      {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
+     *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
      * @param id
-     *                      ID of the object, which will be converted to a lang key via
-     *                      {@link Util#makeDescriptionId(String, Identifier)}
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeDescriptionId(String, Identifier)}
      * @param localizedName
-     *                      (English) translation value
+     *            (English) translation value
      * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addLang(String type, Identifier id, String localizedName) {
@@ -646,19 +587,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Add a custom translation mapping using the vanilla style of Identifier -&gt; translation key conversion. Also
-     * appends a suffix to the key.
+     * Add a custom translation mapping using the vanilla style of Identifier -&gt; translation key conversion. Also appends a suffix to the key.
      *
      * @param type
-     *                      Type of the object, this is used as a prefix (e.g.
-     *                      {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
+     *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
      * @param id
-     *                      ID of the object, which will be converted to a lang key via
-     *                      {@link Util#makeDescriptionId(String, Identifier)}
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeDescriptionId(String, Identifier)}
      * @param suffix
-     *                      A suffix which will be appended to the generated key (separated by a dot)
+     *            A suffix which will be appended to the generated key (separated by a dot)
      * @param localizedName
-     *                      (English) translation value
+     *            (English) translation value
      * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addLang(String type, Identifier id, String suffix, String localizedName) {
@@ -669,9 +607,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Add a custom translation mapping directly to the lang provider.
      *
      * @param key
-     *              The translation key
+     *            The translation key
      * @param value
-     *              The (English) translation value
+     *            The (English) translation value
      * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addRawLang(String key, String value) {
@@ -695,11 +633,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * For internal use, calls upon registered data generators to actually create their data.
      *
      * @param <T>
-     *             The type of the provider
+     *            The type of the provider
      * @param type
-     *             The type of provider to run
+     *            The type of provider to run
      * @param gen
-     *             The provider
+     *            The provider
      */
     @SuppressWarnings("unchecked")
     public <T> void genData(GeneratorType<? extends T> type, T gen) {
@@ -712,7 +650,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
                 entry = getEntryForGenerator(type, cons);
                 if (entry.isPresent()) {
-                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().location());
+                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().identifier());
                 } else {
                     log.debug(DebugMarkers.DATA, "Generating unassociated data of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
                 }
@@ -725,7 +663,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 }
                 Message err;
                 if (entry.isPresent()) {
-                    err = log.getMessageFactory().newMessage("Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().location());
+                    err = log.getMessageFactory().newMessage("Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().identifier());
                 } else {
                     err = log.getMessageFactory().newMessage("Unexpected error while running unassociated data generator of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
                 }
@@ -741,11 +679,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Enable skipping of registry entries and data generators that error during registration/generation.
      * <p>
-     * <strong>Should only be used for debugging!</strong> {@code skipErrors(true)} will do nothing outside of a dev
-     * environment.
+     * <strong>Should only be used for debugging!</strong> {@code skipErrors(true)} will do nothing outside of a dev environment.
      *
      * @param skipErrors
-     *                   {@code true} to skip errors during registration/generation
+     *            {@code true} to skip errors during registration/generation
      * @return this {@link AbstractRegistrate}
      */
     public S skipErrors(boolean skipErrors) {
@@ -758,12 +695,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Begin a new object, this is typically used at the beginning of a builder chain. The given name will be used until
-     * this method is called again. This makes it simple to create multiple entries
+     * Begin a new object, this is typically used at the beginning of a builder chain. The given name will be used until this method is called again. This makes it simple to create multiple entries
      * with the same name, as is often the case with blocks/items, items/entities, and blocks/TEs.
      *
      * @param name
-     *             The name to use for future entries
+     *            The name to use for future entries
      * @return this {@link AbstractRegistrate}
      */
     public S object(String name) {
@@ -774,11 +710,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Set the default CreativeModeTab to be passed onto future builders.
      * <p>
-     * This special case method should be used if your creative tab instance was not created by Registrate, otherwise
-     * use {@link #defaultCreativeTab()}.
-     *
+     * This special case method should be used if your creative tab instance was not created by Registrate, otherwise use {@link #defaultCreativeTab()}.
+     * 
      * @param creativeModeTab
-     *                        The new default CreativeModeTab type
+     *            The new default CreativeModeTab type
      * @return This {@link AbstractRegistrate} instance
      */
     public S defaultCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab) {
@@ -796,7 +731,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Calling this method multiple times will add additional callbacks.
      *
      * @param creativeModeTab The {@link CreativeModeTab} to register this callback for
-     * @param modifier        The modifier callback to be registered
+     * @param modifier The modifier callback to be registered
      * @return This {@link AbstractRegistrate} instance
      */
     public S modifyCreativeModeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
@@ -805,12 +740,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Apply a transformation to this {@link AbstractRegistrate}. Useful to apply helper methods within a fluent chain,
-     * e.g.
+     * Apply a transformation to this {@link AbstractRegistrate}. Useful to apply helper methods within a fluent chain, e.g.
      *
      * <pre>
      * {@code
-     *
      * public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
      *         .transform(Utils::createMyBlock)
      *         .get(Block.class);
@@ -818,7 +751,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * </pre>
      *
      * @param func
-     *             The {@link UnaryOperator function} to apply
+     *            The {@link UnaryOperator function} to apply
      * @return this {@link AbstractRegistrate}
      */
     public S transform(NonNullUnaryOperator<S> func) {
@@ -826,13 +759,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Apply a transformation to this {@link AbstractRegistrate}. Similar to {@link #transform(NonNullUnaryOperator)},
-     * but for actions that return a builder in-progress. Useful to apply helper methods
+     * Apply a transformation to this {@link AbstractRegistrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods
      * within a fluent chain, e.g.
      *
      * <pre>
      * {@code
-     *
      * public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
      *         .transform(Utils::createMyBlock)
      *         .lang("My Block") // Can modify the builder afterwards
@@ -841,15 +772,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * </pre>
      *
      * @param <R>
-     *             Registry type
+     *            Registry type
      * @param <T>
-     *             Entry type
+     *            Entry type
      * @param <P>
-     *             Parent type
+     *            Parent type
      * @param <S2>
-     *             Self type
+     *            Self type
      * @param func
-     *             The {@link Function function} to apply
+     *            The {@link Function function} to apply
      * @return the resultant {@link Builder}
      */
     public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 transform(NonNullFunction<S, S2> func) {
@@ -857,22 +788,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * Create a builder for a new entry. This is typically not needed, unless you are implementing a <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
      * <p>
-     * Uses the currently set name (via {@link #object(String)}) as the name for the new entry, and passes it to the
-     * factory as the first parameter.
+     * Uses the currently set name (via {@link #object(String)}) as the name for the new entry, and passes it to the factory as the first parameter.
      *
      * @param <R>
-     *                Registry type
+     *            Registry type
      * @param <T>
-     *                Entry type
+     *            Entry type
      * @param <P>
-     *                Parent type
+     *            Parent type
      * @param <S2>
-     *                Self type
+     *            Self type
      * @param factory
-     *                The factory to create the builder
+     *            The factory to create the builder
      * @return The {@link Builder} instance
      */
     public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(NonNullBiFunction<String, BuilderCallback, S2> factory) {
@@ -880,21 +809,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * Create a builder for a new entry. This is typically not needed, unless you are implementing a <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
      *
      * @param <R>
-     *                Registry type
+     *            Registry type
      * @param <T>
-     *                Entry type
+     *            Entry type
      * @param <P>
-     *                Parent type
+     *            Parent type
      * @param <S2>
-     *                Self type
+     *            Self type
      * @param name
-     *                The name to use for the entry
+     *            The name to use for the entry
      * @param factory
-     *                The factory to create the builder
+     *            The factory to create the builder
      * @return The {@link Builder} instance
      */
     public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(String name, NonNullFunction<BuilderCallback, S2> factory) {
@@ -904,32 +832,29 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Factory method to accept a completed builder and add it to the registration queue.
      * <p>
-     * Satisfies the functional interface {@link BuilderCallback}, which is typically given to new builder instances
-     * when they are constructed.
-     *
+     * Satisfies the functional interface {@link BuilderCallback}, which is typically given to new builder instances when they are constructed.
+     * 
      * @param <R>
-     *                     Registry type
+     *            Registry type
      * @param <T>
-     *                     Entry type
+     *            Entry type
      * @param name
-     *                     Thename of the entry being created
+     *            Thename of the entry being created
      * @param type
-     *                     The registry to add the entry to
+     *            The registry to add the entry to
      * @param builder
-     *                     The builder instance that was used to create this entry. Not used by default implementation,
-     *                     but custom extensions may use it for some purpose
+     *            The builder instance that was used to create this entry. Not used by default implementation, but custom extensions may use it for some purpose
      * @param creator
-     *                     Constructor for the new entry object
+     *            Constructor for the new entry object
      * @param entryFactory
-     *                     Optional custom factory to create special {@link RegistryEntry} types
+     *            Optional custom factory to create special {@link RegistryEntry} types
      * @return A {@link RegistryEntry} that will hold the created entry after registration is complete
      */
     protected <R, T extends R> RegistryEntry<R, T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<DeferredHolder<R, T>, ? extends RegistryEntry<R, T>> entryFactory) {
         Registration<R, T> reg = new Registration<>(Identifier.fromNamespaceAndPath(modid, name), type, creator, entryFactory);
-        log.trace(DebugMarkers.REGISTER, "Captured registration for entry {}:{} of type {}", getModid(), name, type.location());
+        log.trace(DebugMarkers.REGISTER, "Captured registration for entry {}:{} of type {}", getModid(), name, type.identifier());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
             @SuppressWarnings({ "unchecked", "null" })
-            @Nonnull
             NonNullConsumer<? super T> unsafeCallback = (NonNullConsumer<? super T>) callback;
             reg.addRegisterCallback(unsafeCallback);
         });
@@ -938,22 +863,19 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Helper to create a new registry for custom objects. The returned {@link ResourceKey} can be used immediately in
-     * methods like {@link #simple(ResourceKey, NonNullSupplier) simple} or
+     * Helper to create a new registry for custom objects. The returned {@link ResourceKey} can be used immediately in methods like {@link #simple(ResourceKey, NonNullSupplier) simple} or
      * {@link #generic(ResourceKey, NonNullSupplier) generic}.
      * <p>
      * Alternatively, a custom {@link Builder builder} can be created.
      * <p>
-     * This method will automatically subscribe to the {@link NewRegistryEvent} and create the registry at the proper
-     * time. Thus, the new registry will not exist immediately after this is called.
-     *
+     * This method will automatically subscribe to the {@link NewRegistryEvent} and create the registry at the proper time. Thus, the new registry will not exist immediately after this is called.
+     * 
      * @param <R>
-     *                The type of object the new registry will contain
+     *            The type of object the new registry will contain
      * @param name
-     *                The ID of this registry
+     *            The ID of this registry
      * @param builder
-     *                A function to create the {@link RegistryBuilder} that defines the other properties/behaviors of
-     *                the created registry
+     *            A function to create the {@link RegistryBuilder} that defines the other properties/behaviors of the created registry
      * @return A {@link ResourceKey resource key} referencing the to-be-created registry.
      */
     public <R> ResourceKey<Registry<R>> makeRegistry(String name, Function<ResourceKey<Registry<R>>, RegistryBuilder<R>> builder) {
@@ -967,10 +889,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * a datapack folder based on the registry's name. The datapack registry is not required to be present
      * on clients when connecting to servers with the mod/registry.
      * <p>
-     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the
-     * namespace of the registry key.
+     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the namespace of the registry key.
      *
-     * @param name  The ID of this registry
+     * @param name The ID of this registry
      * @param codec The codec to be used for loading data from datapacks on servers
      * @see #makeDatapackRegistry(String, Codec, Codec)
      */
@@ -982,20 +903,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Registers the registry key as a datapack registry, which will cause data to be loaded from
      * a datapack folder based on the registry's name.
      * <p>
-     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the
-     * namespace of the registry key.
+     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the namespace of the registry key.
      *
-     * @param name         The ID of this registry
-     * @param codec        The codec to be used for loading data from datapacks on servers
+     * @param name The ID of this registry
+     * @param codec The codec to be used for loading data from datapacks on servers
      * @param networkCodec The codec to be used for syncing loaded data to clients.
-     *                     If {@code networkCodec} is null, data will not be synced, and clients are not required to
-     *                     have this
-     *                     datapack registry to join a server.
-     *                     <p>
-     *                     If {@code networkCodec} is not null, clients must have this datapack registry/mod
-     *                     when joining a server that has this datapack registry/mod.
-     *                     The data will be synced using the network codec and accessible via
-     *                     {@link ClientPacketListener#registryAccess()}.
+     * If {@code networkCodec} is null, data will not be synced, and clients are not required to have this
+     * datapack registry to join a server.
+     * <p>
+     * If {@code networkCodec} is not null, clients must have this datapack registry/mod
+     * when joining a server that has this datapack registry/mod.
+     * The data will be synced using the network codec and accessible via {@link ClientPacketListener#registryAccess()}.
      * @see #makeDatapackRegistry(String, Codec)
      */
     public <R> ResourceKey<Registry<R>> makeDatapackRegistry(String name, Codec<R> codec, @Nullable Codec<R> networkCodec) {
@@ -1145,12 +1063,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(Identifier stillTexture, Identifier flowingTexture,
-                                                                 FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(Identifier stillTexture, Identifier flowingTexture,
-                                                                 NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
@@ -1184,12 +1102,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(String name, Identifier stillTexture, Identifier flowingTexture,
-                                                                 FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(String name, Identifier stillTexture, Identifier flowingTexture,
-                                                                 NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
@@ -1223,52 +1141,60 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
-                                                                    FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
-                                                                    NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name) {
-        return fluid(parent, name, Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_still"), Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_flow"));
+        return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture());
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, FluidBuilder.FluidTypeFactory typeFactory) {
-        return fluid(parent, name, Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_still"), Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_flow"), typeFactory);
+        return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture(), typeFactory);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, NonNullSupplier<FluidType> fluidType) {
-        return fluid(parent, name, Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_still"), Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_flow"), fluidType);
+        return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture(), fluidType);
+    }
+
+    private Identifier defaultStillTexture() {
+        return Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_still");
+    }
+
+    private Identifier defaultFlowingTexture() {
+        return Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_flow");
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, FluidType::new)).clientExtension(stillTexture, flowingTexture);
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, FluidType::new)).model(stillTexture, flowingTexture);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory)).clientExtension(stillTexture, flowingTexture);
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory)).model(stillTexture, flowingTexture);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType)).clientExtension(stillTexture, flowingTexture);
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType)).model(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture,
                                                                     FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidFactory)).clientExtension(stillTexture, flowingTexture);
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture,
-                                                                    FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory, fluidFactory)).clientExtension(stillTexture, flowingTexture);
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture,
-                                                                    NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType, fluidFactory)).clientExtension(stillTexture, flowingTexture);
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
     // Menu
@@ -1340,7 +1266,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return this.generic(parent, name, Registries.CREATIVE_MODE_TAB, () -> {
             var builder = CreativeModeTab.builder()
                     .icon(() -> getAll(Registries.ITEM).stream().findFirst().map(ItemEntry::cast).map(ItemEntry::asStack).orElse(new ItemStack(Items.AIR)))
-                    .title(this.addLang("itemGroup", this.defaultCreativeModeTab.location(), RegistrateLangProvider.toEnglishName(name)));
+                    .title(this.addLang("itemGroup", this.defaultCreativeModeTab.identifier(), RegistrateLangProvider.toEnglishName(name)));
             config.accept(builder);
             return builder.build();
         });

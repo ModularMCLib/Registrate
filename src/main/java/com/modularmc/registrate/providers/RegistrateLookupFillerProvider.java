@@ -7,4 +7,5 @@ import java.util.concurrent.CompletableFuture;
 public interface RegistrateLookupFillerProvider extends RegistrateProvider {
 
     CompletableFuture<HolderLookup.Provider> getFilledProvider();
+
 }

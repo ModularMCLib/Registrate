@@ -1,20 +1,18 @@
 package com.modularmc.registrate.util.entry;
 
-import com.modularmc.registrate.util.nullness.NonNullSupplier;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
+import com.modularmc.registrate.util.nullness.NonNullSupplier;
 
 public class LazyRegistryEntry<R, T extends R> implements NonNullSupplier<T> {
 
-    @Nullable
-    private NonNullSupplier<? extends RegistryEntry<R, T>> supplier;
-    @Nullable
-    private RegistryEntry<R, T> value;
+    private @Nullable NonNullSupplier<? extends RegistryEntry<R, T>> supplier;
+    private @Nullable RegistryEntry<R, T> value;
 
     public LazyRegistryEntry(NonNullSupplier<? extends RegistryEntry<R, T>> supplier) {
         this.supplier = supplier;
     }
-
+    
     @Override
     public T get() {
         NonNullSupplier<? extends RegistryEntry<R, T>> supplier = this.supplier;

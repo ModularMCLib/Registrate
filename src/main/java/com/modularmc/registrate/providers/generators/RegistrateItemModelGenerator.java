@@ -3,8 +3,6 @@ package com.modularmc.registrate.providers.generators;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
-import com.modularmc.registrate.util.nullness.NonnullType;
-
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
@@ -14,6 +12,7 @@ import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -35,8 +34,9 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.ITEM_MODEL, this);
-        // TODO check if an item actually has a valid model
+        //TODO check if an item actually has a valid model
     }
+
 
     public void createWithExistingModel(Item item, Identifier id) {
         itemModelOutput.accept(item, ItemModelUtils.plainModel(id));
@@ -46,11 +46,11 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
         itemModelOutput.accept(item, ItemModelUtils.plainModel(template.create(item, textures, modelOutput)));
     }
 
-    public void generateFlatItem(Item item, Identifier layer0) {
+    public void generateFlatItem(Item item, Material layer0) {
         generateFlatItem(item, ModelTemplates.FLAT_ITEM, layer0);
     }
 
-    public void generateFlatItem(Item item, ModelTemplate template, Identifier layer0) {
+    public void generateFlatItem(Item item, ModelTemplate template, Material layer0) {
         itemModelOutput.accept(item, ItemModelUtils.plainModel(template.create(item, TextureMapping.layer0(layer0), modelOutput)));
     }
 
@@ -78,6 +78,22 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
         return Identifier.fromNamespaceAndPath(parent.getModid(), id);
     }
 
+    public Material mcBlockTexture(String path) {
+        return new Material(mcLoc("block/" + path));
+    }
+
+    public Material modBlockTexture(String path) {
+        return new Material(modLoc("block/" + path));
+    }
+
+    public Material mcItemTexture(String path) {
+        return new Material(mcLoc("item/" + path));
+    }
+
+    public Material modItemTexture(String path) {
+        return new Material(modLoc("item/" + path));
+    }
+
     public String modid(NonNullSupplier<? extends ItemLike> item) {
         return BuiltInRegistries.ITEM.getKey(item.get().asItem()).getNamespace();
     }
@@ -86,7 +102,7 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
         return BuiltInRegistries.ITEM.getKey(item.get().asItem()).getPath();
     }
 
-    public void generateTintedModel(@NonnullType Item entry, Identifier model, ItemTintSource tint) {
+    public void generateTintedModel(Item entry, Identifier model, ItemTintSource tint) {
         this.itemModelOutput.accept(entry, ItemModelUtils.tintedModel(model, tint));
     }
 }

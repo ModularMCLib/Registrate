@@ -1,6 +1,2 @@
-@javax.annotation.ParametersAreNonnullByDefault
-@net.minecraft.MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@org.jspecify.annotations.NullMarked
 package com.modularmc.registrate.test.meta;
-
-import com.modularmc.registrate.util.nullness.FieldsAreNonnullByDefault;
