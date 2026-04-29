@@ -218,7 +218,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         ItemBuilder<SpawnEggItem, EntityBuilder<T, P>> eggBuilder = getOwner()
                 .item(this, getName() + "_spawn_egg", SpawnEggItem::new)
                 .properties(properties -> properties.spawnEgg(entityType.get()))
-                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/template_spawn_egg")))
+                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/pig_spawn_egg")))
                 .tab(CreativeModeTabs.SPAWN_EGGS);
         consumer.accept(eggBuilder);
         return eggBuilder.build();

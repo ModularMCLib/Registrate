@@ -527,7 +527,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         }
         final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
                 .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
-                .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/water_bucket")));
         this.fluidProperties(p -> p.bucket(ret.asSupplier()));
         return ret;
     }

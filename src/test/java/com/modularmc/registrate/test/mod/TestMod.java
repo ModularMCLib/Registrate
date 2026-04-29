@@ -323,6 +323,15 @@ public class TestMod {
             .register();
 
     @VisibleForTesting
+    public final FluidEntry<BaseFlowingFluid.Flowing> testbucketfluid = registrate.object("testbucketfluid")
+            .fluid(
+                    Identifier.withDefaultNamespace("block/water_still"),
+                    Identifier.withDefaultNamespace("block/water_flow"),
+                    FluidType::new)
+            .properties(p -> p.lightLevel(7).canConvertToSource(true))
+            .register();
+
+    @VisibleForTesting
     public final MenuEntry<ChestMenu> testmenu = registrate.object("testmenu")
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
@@ -454,6 +463,7 @@ public class TestMod {
         if (testfluid.getSiblingOptional(Registries.ITEM).isPresent()) throw new IllegalStateException("Expected no item sibling for test fluid");
         if (testfluid.getBlock().isPresent()) throw new IllegalStateException("Expected no block sibling for test fluid");
         if (testfluid.getSource().getSource() != testfluid.getSource()) throw new IllegalStateException("Expected canonical fluid source");
+        if (testbucketfluid.getBucket().isEmpty()) throw new IllegalStateException("Expected a generated bucket entry for test bucket fluid");
     }
 
     private static class Client {
