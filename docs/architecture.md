@@ -10,7 +10,7 @@
   - Public entrypoints.
   - `AbstractRegistrate` is the orchestration core.
   - `Registrate` is the default public implementation.
-  - `RegistrateLib` is the NeoForge library entrypoint for this fork and also exposes shared metadata/constants.
+  - `RegistrateLib` is the minimal NeoForge library entrypoint for this fork.
 - `com.modularmc.registrate.builders`
   - Public-facing fluent registration DSL.
   - Owns object construction rules and builder chaining behavior.
@@ -54,6 +54,7 @@ Treat the root package plus `builders` and `util.entry` as the main downstream-f
 - Event-bus plumbing and other implementation-only helpers belong under `internal`.
 - Instance-scoped NeoForge lifecycle orchestration belongs in `internal.lifecycle`.
 - Test-only scaffolding belongs under `src/test/java` even if it mirrors production APIs.
+- Sample visuals, showcase content, and anything that is not intrinsic to the reusable registration library should also stay under `src/test`.
 
 ## Modernization Principles
 

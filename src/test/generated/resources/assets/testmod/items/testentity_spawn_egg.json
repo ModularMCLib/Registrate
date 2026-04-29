@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/pig_spawn_egg"
+    "model": "testmod:item/testentity_spawn_egg"
   }
 }

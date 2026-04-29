@@ -209,6 +209,10 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * The created egg uses the modern {@link net.minecraft.world.item.Item.Properties#spawnEgg(EntityType)} API and is
      * added to {@link CreativeModeTabs#SPAWN_EGGS} by default.
      *
+     * <p>
+     * No default item model is generated. If a consumer wants spawn egg visuals,
+     * it should provide them explicitly via the nested {@link ItemBuilder}.
+     *
      * @param consumer
      *                 A callback for customizing the nested egg {@link ItemBuilder}
      * @return this {@link EntityBuilder}
@@ -218,7 +222,6 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         ItemBuilder<SpawnEggItem, EntityBuilder<T, P>> eggBuilder = getOwner()
                 .item(this, getName() + "_spawn_egg", SpawnEggItem::new)
                 .properties(properties -> properties.spawnEgg(entityType.get()))
-                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/pig_spawn_egg")))
                 .tab(CreativeModeTabs.SPAWN_EGGS);
         consumer.accept(eggBuilder);
         return eggBuilder.build();

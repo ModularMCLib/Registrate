@@ -100,7 +100,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     protected void registerModel() {
-        OneTimeEventReceiver.addModListener(getOwner(), RegisterFluidModelsEvent.class, e -> {
+        var modEventBus = getOwner().getModEventBus();
+        java.util.function.Consumer<RegisterFluidModelsEvent> listener = e -> {
             NonNullSupplier<Supplier<FluidModel.Unbaked>> model = this.model;
             if (model != null) {
                 NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
@@ -110,7 +111,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
                     e.register(model.get().get(), getEntry());
                 }
             }
-        });
+        };
+        if (modEventBus != null) {
+            modEventBus.addListener(listener);
+        } else {
+            OneTimeEventReceiver.addModListener(getOwner(), RegisterFluidModelsEvent.class, listener);
+        }
     }
 
     protected void registerClientExtension() {
@@ -527,7 +533,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         }
         final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
                 .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
-                .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("item/water_bucket")));
+                .model(() -> (ctx, prov) -> prov.generateFluidBucket(ctx.getEntry(), source.get()));
         this.fluidProperties(p -> p.bucket(ret.asSupplier()));
         return ret;
     }

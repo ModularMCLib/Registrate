@@ -16,7 +16,7 @@ This repository is the `com.modularmc.registrate` fork maintained for the Modula
 
 ## Code Classification
 
-- `com.modularmc.registrate`: public API roots, fork metadata, and the central registration coordinator.
+- `com.modularmc.registrate`: public API roots, minimal library bootstrap, and the central registration coordinator.
 - `com.modularmc.registrate.builders`: the fluent DSL used by downstream mods to register content.
 - `com.modularmc.registrate.providers`: data generation orchestration and provider lifecycle management.
 - `com.modularmc.registrate.providers.generators`: blockstate, model, and recipe generator adapters.
@@ -28,7 +28,7 @@ This repository is the `com.modularmc.registrate` fork maintained for the Modula
 - `com.modularmc.registrate.internal.event`: one-shot event wiring used by builders and registration lifecycle hooks.
 - `com.modularmc.registrate.internal.lifecycle`: per-instance lifecycle bridges that keep NeoForge event hookups centralized without collapsing multiple mods into one shared runtime.
 - `com.modularmc.registrate.internal.util`: dist-gated execution and internal logging helpers.
-- `com.modularmc.registrate.test.mod`: an integration-style sample mod that exercises the public API.
+- `com.modularmc.registrate.test.mod`: the integration-style sample mod where non-library showcase behavior should live.
 - `com.modularmc.registrate.test.gametests`: executable validation scenarios for runtime behavior.
 - `com.modularmc.registrate.test.meta`: maintenance utilities that keep generated bridge methods aligned with upstream APIs.
 

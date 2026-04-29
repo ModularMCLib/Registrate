@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -294,7 +295,7 @@ public class TestMod {
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR)
-            .spawnEgg()
+            .spawnEgg(egg -> egg.model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.getEntry(), new Material(Identifier.fromNamespaceAndPath(MOD_ID, "item/testentity_spawn_egg")))))
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1))

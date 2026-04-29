@@ -19,7 +19,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.client.model.item.DynamicFluidContainerModel;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
@@ -108,5 +111,18 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
 
     public void generateTintedModel(Item entry, Identifier model, ItemTintSource tint) {
         this.itemModelOutput.accept(entry, ItemModelUtils.tintedModel(model, tint));
+    }
+
+    public void generateFluidBucket(Item item, Fluid fluid) {
+        itemModelOutput.accept(item, new DynamicFluidContainerModel.Unbaked(
+                new DynamicFluidContainerModel.Textures(
+                        Optional.of(mcItemTexture("bucket")),
+                        Optional.of(mcItemTexture("bucket")),
+                        Optional.of(new Material(Identifier.fromNamespaceAndPath("neoforge", "item/mask/bucket_fluid"))),
+                        Optional.empty()),
+                fluid,
+                true,
+                true,
+                true));
     }
 }
