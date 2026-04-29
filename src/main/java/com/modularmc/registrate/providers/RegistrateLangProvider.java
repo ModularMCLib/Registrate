@@ -148,6 +148,10 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         }
     }
 
+    private static boolean isFormatTokenChar(char c) {
+        return Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd';
+    }
+
     private String toUpsideDown(String normal) {
         int formatIndex = 1;
         ArrayList<Character> ud = new ArrayList<>();
@@ -155,8 +159,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             char c = normal.charAt(i);
             if (c == '%') {
                 String fmtArg = "";
-                while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit
-                                                                                               // lazy
+                while (isFormatTokenChar(c)) {
                     if (fmtArg.equals("%") && c == 's') {
                         fmtArg = "%" + formatIndex + "$s";
                         formatIndex++;

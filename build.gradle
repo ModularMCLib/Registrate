@@ -35,6 +35,9 @@ sourceSets {
     test {
         compileClasspath += main.output + main.compileClasspath
         runtimeClasspath += main.output + main.runtimeClasspath
+        resources {
+            srcDir 'src/test/generated/resources'
+        }
     }
 
     extra {

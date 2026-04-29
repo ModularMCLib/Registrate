@@ -225,7 +225,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param tintSources The tint sources to register for this block, indexed by tint index
      * @return this {@link BlockBuilder}
      */
-    // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
     public BlockBuilder<T, P> color(NonNullSupplier<Supplier<List<BlockTintSource>>> tintSources) {
         if (this.tintSources == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerBlockColor);
@@ -377,8 +376,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     protected T createEntry() {
         @Nonnull
         BlockBehaviour.Properties properties = this.initialProperties.get();
-        // TODO why do we need this?
-        // ObfuscationReflectionHelper.setPrivateValue(BlockBehaviour.Properties.class, properties, null, "drops");
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties.setId(getResourceKey()));
     }

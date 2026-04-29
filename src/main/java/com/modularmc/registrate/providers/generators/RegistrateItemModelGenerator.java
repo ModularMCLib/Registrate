@@ -35,7 +35,6 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.ITEM_MODEL, this);
-        // TODO check if an item actually has a valid model
     }
 
     public void createWithExistingModel(Item item, Identifier id) {
@@ -52,6 +51,11 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
 
     public void generateFlatItem(Item item, ModelTemplate template, Material layer0) {
         itemModelOutput.accept(item, ItemModelUtils.plainModel(template.create(item, TextureMapping.layer0(layer0), modelOutput)));
+    }
+
+    public void generateFlatItem(Item item, ModelTemplate template, TextureMapping textures, ItemTintSource... tints) {
+        Identifier model = template.create(item, textures, modelOutput);
+        itemModelOutput.accept(item, tints.length == 0 ? ItemModelUtils.plainModel(model) : ItemModelUtils.tintedModel(model, tints));
     }
 
     public void generateFlatBlockItem(BlockItem item) {

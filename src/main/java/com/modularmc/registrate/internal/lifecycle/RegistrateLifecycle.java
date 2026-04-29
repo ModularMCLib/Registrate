@@ -68,7 +68,9 @@ public final class RegistrateLifecycle {
         });
 
         if (hooks.doDatagen()) {
-            OneTimeEventReceiver.addModListener(owner, GatherDataEvent.Client.class, hooks::onData);
+            // The current moddev datagen entrypoints use DataServer, which dispatches the
+            // server-side gather event even when `--all` is requested.
+            OneTimeEventReceiver.addModListener(owner, GatherDataEvent.Server.class, hooks::onData);
         }
     }
 }

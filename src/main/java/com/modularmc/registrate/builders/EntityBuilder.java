@@ -25,6 +25,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.api.distmarker.Dist;
@@ -88,7 +90,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     private @Nullable NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T, ?>>> renderer;
 
-    private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
+    private boolean attributesConfigured, spawnConfigured;
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
         super(owner, parent, name, callback, Registries.ENTITY_TYPE);
@@ -185,18 +187,6 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         }
         spawnConfigured = true;
         this.onRegister(t -> {
-            /*
-             * TODO is there any way to do this now?
-             * try {
-             * if (!(t.create(null) instanceof MobEntity)) {
-             * throw new IllegalArgumentException("Cannot register spawn placement for entity " + t.getRegistryName() +
-             * " as it does not extend MobEntity");
-             * }
-             * } catch (Exception e) {
-             * throw new RuntimeException("Failed to type check entity " + t.getRegistryName() +
-             * " when registering spawn placement", e);
-             * }
-             */
             OneTimeEventReceiver.addModListener(getOwner(), RegisterSpawnPlacementsEvent.class, e -> {
                 e.register(t, type, heightmap, predicate, operation);
             });
@@ -205,57 +195,34 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Create a spawn egg item for this entity using the given colors, not allowing for any extra configuration.
+     * Create a spawn egg item for this entity and build it immediately.
      *
-     * Deprecated note: This does not work properly, see
-     * <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
-     * <p>
-     * As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
-     *
-     * @param primaryColor
-     *                       The primary color of the egg
-     * @param secondaryColor
-     *                       The secondary color of the egg
      * @return this {@link EntityBuilder}
      */
-    /*
-     * TODO <1.21.4> spawn egg
-     *
-     * @Deprecated
-     * public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
-     * return spawnEgg(primaryColor, secondaryColor).build();
-     * }
-     *
-     */
+    public EntityBuilder<T, P> spawnEgg() {
+        return spawnEgg($ -> {});
+    }
 
     /**
-     * Create a spawn egg item for this entity using the given colors, and return the builder for further configuration.
+     * Create a spawn egg item for this entity and expose its builder for further customization.
      *
-     * Deprecated note: This does not work properly, see
-     * <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      * <p>
-     * As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
+     * The created egg uses the modern {@link net.minecraft.world.item.Item.Properties#spawnEgg(EntityType)} API and is
+     * added to {@link CreativeModeTabs#SPAWN_EGGS} by default.
      *
-     * @param primaryColor
-     *                       The primary color of the egg
-     * @param secondaryColor
-     *                       The secondary color of the egg
-     * @return the {@link ItemBuilder} for the egg item
+     * @param consumer
+     *                 A callback for customizing the nested egg {@link ItemBuilder}
+     * @return this {@link EntityBuilder}
      */
-    /*
-     * TODO <1.21.4> spawn egg
-     *
-     * @SuppressWarnings({ "rawtypes", "unchecked" })
-     *
-     * @Deprecated
-     * public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-     * var sup = asSupplier();
-     * return getOwner().item(this, getName() + "_spawn_egg", p -> new DeferredSpawnEggItem((Supplier<EntityType<?
-     * extends Mob>>) (Supplier) sup, primaryColor, secondaryColor, p)).tab(CreativeModeTabs.SPAWN_EGGS)
-     * .model((ctx, prov) -> prov.withExistingParent(ctx.getName(),
-     * Identifier.withDefaultNamespace("item/template_spawn_egg")));
-     * }
-     */
+    public EntityBuilder<T, P> spawnEgg(NonNullConsumer<ItemBuilder<SpawnEggItem, EntityBuilder<T, P>>> consumer) {
+        NonNullSupplier<EntityType<T>> entityType = asSupplier();
+        ItemBuilder<SpawnEggItem, EntityBuilder<T, P>> eggBuilder = getOwner()
+                .item(this, getName() + "_spawn_egg", SpawnEggItem::new)
+                .properties(properties -> properties.spawnEgg(entityType.get()))
+                .tab(CreativeModeTabs.SPAWN_EGGS);
+        consumer.accept(eggBuilder);
+        return eggBuilder.build();
+    }
 
     /**
      * Assign the default translation, as specified by
@@ -311,9 +278,6 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         builderCallback.accept(builder);
         return builder.build(getResourceKey());
     }
-
-    @Deprecated
-    protected void injectSpawnEggType(EntityType<T> entry) {}
 
     @Override
     protected RegistryEntry<EntityType<?>, EntityType<T>> createEntryWrapper(DeferredHolder<EntityType<?>, EntityType<T>> delegate) {

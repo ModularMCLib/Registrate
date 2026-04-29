@@ -19,7 +19,9 @@ import com.modularmc.registrate.util.nullness.NonNullFunction;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
 import com.modularmc.registrate.util.nullness.NonNullUnaryOperator;
 
+import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -211,15 +213,24 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    // TODO <1.21.4> alternate item coloring helper?
-
     /**
      * Assign the default model to this item, which is simply a generated model with a single texture of the same name.
      *
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> defaultModel() {
-        return model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+        return defaultModel(new ItemTintSource[0]);
+    }
+
+    /**
+     * Assign the default generated model to this item and apply the supplied item tint sources to its layers.
+     *
+     * @param tints
+     *              Tint sources to apply to the generated model layers
+     * @return this {@link ItemBuilder}
+     */
+    public ItemBuilder<T, P> defaultModel(ItemTintSource... tints) {
+        return model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM, TextureMapping.layer0(ctx.get()), tints));
     }
 
     /**

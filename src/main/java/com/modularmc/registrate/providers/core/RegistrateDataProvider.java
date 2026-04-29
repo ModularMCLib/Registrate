@@ -1,6 +1,7 @@
 package com.modularmc.registrate.providers.core;
 
 import com.modularmc.registrate.AbstractRegistrate;
+import com.modularmc.registrate.internal.datagen.RegistrateDatagenBootstrap;
 import com.modularmc.registrate.internal.util.DebugMarkers;
 import com.modularmc.registrate.providers.RegistrateTagsProvider;
 
@@ -80,6 +81,7 @@ public class RegistrateDataProvider implements DataProvider {
 
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
+        RegistrateDatagenBootstrap.bootstrapClientCodecs();
         return registriesLookup.thenCompose(provider -> {
             var list = Lists.<CompletableFuture<?>>newArrayList();
 

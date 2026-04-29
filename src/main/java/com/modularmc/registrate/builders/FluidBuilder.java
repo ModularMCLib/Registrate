@@ -507,7 +507,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         }
         this.defaultBucket = false;
         NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
-        // TODO: Can we find a way to circumvent this limitation?
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }

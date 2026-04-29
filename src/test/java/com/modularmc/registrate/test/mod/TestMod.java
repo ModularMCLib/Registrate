@@ -13,6 +13,8 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.color.item.Constant;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -246,9 +248,7 @@ public class TestMod {
     public final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
             .properties(BlockBehaviour.Properties::noOcclusion)
-            .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
-                    prov.getBuilder().transformTemplate(template -> template
-                            .parent(prov.mcLoc("block/glass"))).build(ctx.getEntry())))
+            .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(), prov.mcLoc("block/glass")))
             .transform(TestMod::applyDiamondDrop)
             .recipe((ctx, prov) -> {
                 prov.shaped(RecipeCategory.MISC, ctx.getEntry())
@@ -274,10 +274,12 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
-            .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(), prov.getBuilder()
-                    .transformTemplate(t -> t
-                            .parent(prov.mcLoc("block/gold_block")))
-                    .build(prov.modLoc("block/subfolder/" + ctx.getName()))))
+            .blockstate(() -> (ctx, prov) -> prov.create(
+                    ctx.getEntry(),
+                    ModelTemplates.CUBE_ALL.create(
+                            prov.modLoc("block/subfolder/" + ctx.getName()),
+                            TextureMapping.cube(prov.mcBlockTexture("gold_block")),
+                            prov.modelOutput)))
             .simpleItem()
             .register();
 
@@ -292,7 +294,7 @@ public class TestMod {
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR)
-            // TODO <1.21.4> .defaultSpawnEgg(0xFF0000, 0x00FF00)
+            .spawnEgg()
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1))
@@ -301,11 +303,13 @@ public class TestMod {
                                     .apply(EnchantedCountIncreaseFunction.lootingMultiplier(prov.getRegistries(), UniformGenerator.between(0, 2)))))))
             .tag(EntityTypeTags.RAIDERS)
             .register();
+    @VisibleForTesting
+    public final ItemEntry<SpawnEggItem> testentitySpawnEgg = ItemEntry.cast(registrate.get("testentity_spawn_egg", Registries.ITEM));
 
     @VisibleForTesting
     public final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
             .blockEntity(TestDummyBlockEntity::new)
-            .validBlock(() -> Blocks.DIRT)// TODO <1.21.4> now empty valid block is not allowed
+            .validBlock(() -> Blocks.DIRT)
             .register();
 
     @VisibleForTesting
@@ -316,9 +320,6 @@ public class TestMod {
                     FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
             .noBucket()
-            // .bucket()
-            // .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
-            // .build()
             .register();
 
     @VisibleForTesting

@@ -87,7 +87,7 @@ neoForge {
         data {
             clientData()
             serverData()
-            sourceSet = sourceSets.test
+            sourceSet = sourceSets.main
             ideName = "Data Generation"
 
             gameDirectory.set(file('run/data'))
@@ -96,6 +96,20 @@ neoForge {
             programArguments.addAll('--all')
             programArguments.addAll('--output', file('src/generated/resources/').getAbsolutePath())
             programArguments.addAll('--existing', file('src/main/resources/').getAbsolutePath())
+        }
+
+        Testdata {
+            clientData()
+            serverData()
+            sourceSet = sourceSets.test
+            ideName = "Test Data Generation"
+
+            gameDirectory.set(file('run/data'))
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            programArguments.addAll('--mod', "${devTestModId}")
+            programArguments.addAll('--all')
+            programArguments.addAll('--output', file('src/test/generated/resources/').getAbsolutePath())
+            programArguments.addAll('--existing', file('src/test/resources/').getAbsolutePath())
         }
 
         // applies to all the run configs above
