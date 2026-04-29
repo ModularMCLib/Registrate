@@ -105,11 +105,11 @@ dependencies {
 }
 ```
 
-Then declare `registrate` as a required dependency in your `neoforge.mods.toml`:
+Then declare `registratelib` as a required dependency in your `neoforge.mods.toml`:
 
 ```toml
 [[dependencies.yourmodid]]
-modId="registrate"
+modId="registratelib"
 type="required"
 versionRange="[2.0.0,)"
 ordering="AFTER"
