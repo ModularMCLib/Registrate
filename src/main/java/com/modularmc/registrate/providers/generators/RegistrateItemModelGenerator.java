@@ -3,6 +3,7 @@ package com.modularmc.registrate.providers.generators;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
+
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
@@ -34,9 +35,8 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.ITEM_MODEL, this);
-        //TODO check if an item actually has a valid model
+        // TODO check if an item actually has a valid model
     }
-
 
     public void createWithExistingModel(Item item, Identifier id) {
         itemModelOutput.accept(item, ItemModelUtils.plainModel(id));

@@ -1,6 +1,7 @@
 package com.modularmc.registrate.test.gametests;
 
 import com.modularmc.registrate.test.mod.TestMod;
+
 import net.neoforged.testframework.DynamicTest;
 import net.neoforged.testframework.annotation.ForEachTest;
 import net.neoforged.testframework.annotation.TestHolder;
@@ -17,7 +18,6 @@ public class CustomItemTests {
         test.onGameTest(helper -> helper.startSequence(() -> TestMod.instance().testitem.asStack())
                 .thenMap(stack -> stack.getHoverName().getString())
                 .thenExecute(name -> helper.assertValueEqual(name, "Testitem", "Test Item localized name"))
-                .thenSucceed()
-        );
+                .thenSucceed());
     }
 }

@@ -1,6 +1,7 @@
 package com.modularmc.registrate.util.entry;
 
 import com.modularmc.registrate.AbstractRegistrate;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;

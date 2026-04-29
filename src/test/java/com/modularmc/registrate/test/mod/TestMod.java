@@ -1,8 +1,5 @@
 package com.modularmc.registrate.test.mod;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.modularmc.registrate.Registrate;
 import com.modularmc.registrate.builders.BlockBuilder;
 import com.modularmc.registrate.providers.DataGenContext;
@@ -10,6 +7,7 @@ import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.modularmc.registrate.util.DataIngredient;
 import com.modularmc.registrate.util.entry.*;
+
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
@@ -104,14 +102,19 @@ import net.neoforged.testframework.conf.ClientConfiguration;
 import net.neoforged.testframework.conf.Feature;
 import net.neoforged.testframework.conf.FrameworkConfiguration;
 import net.neoforged.testframework.impl.MutableTestFramework;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import org.lwjgl.glfw.GLFW;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nullable;
 
 @Mod(TestMod.MOD_ID)
 public class TestMod {
@@ -163,6 +166,7 @@ public class TestMod {
     }
 
     private static class TestBlockEntityRenderer implements BlockEntityRenderer<TestBlockEntity, TestBlockEntityRenderer.RenderState> {
+
         private final ItemModelResolver itemModelResolver;
 
         public TestBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -189,6 +193,7 @@ public class TestMod {
         }
 
         private static class RenderState extends BlockEntityRenderState {
+
             private final ItemStackRenderState item = new ItemStackRenderState();
         }
     }
@@ -221,12 +226,12 @@ public class TestMod {
     @VisibleForTesting
     public final ItemEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
-                .onRegister(item -> sawCallback.set(true))
-                .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
-                .tag(ItemTags.BEDS)
+            .onRegister(item -> sawCallback.set(true))
+            .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
+            .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
-                .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
-                .register();
+            .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
+            .register();
 
     @VisibleForTesting
     public final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
@@ -239,42 +244,39 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
-                .properties(p -> p.noOcclusion())
+            .properties(p -> p.noOcclusion())
             .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
                     prov.getBuilder().transformTemplate(template -> template
-                            .parent(prov.mcLoc("block/glass"))
-                    ).build(ctx.getEntry())
-            ))
-                .transform(TestMod::applyDiamondDrop)
-                .recipe((ctx, prov) -> {
-                    prov.shaped(RecipeCategory.MISC, ctx.getEntry())
-                            .pattern("DDD").pattern("DED").pattern("DDD")
-                            .define('D', Items.DIAMOND)
-                            .define('E', Items.EGG)
-                            .unlockedBy("has_egg", prov.has(Items.EGG))
-                            .save(prov);
+                            .parent(prov.mcLoc("block/glass"))).build(ctx.getEntry())))
+            .transform(TestMod::applyDiamondDrop)
+            .recipe((ctx, prov) -> {
+                prov.shaped(RecipeCategory.MISC, ctx.getEntry())
+                        .pattern("DDD").pattern("DED").pattern("DDD")
+                        .define('D', Items.DIAMOND)
+                        .define('E', Items.EGG)
+                        .unlockedBy("has_egg", prov.has(Items.EGG))
+                        .save(prov);
 
-                    prov.food(DataIngredient.items(ctx), RecipeCategory.MISC, CookingBookCategory.MISC, () -> Blocks.DIAMOND_BLOCK, 1f);
-                })
-                .tag(BlockTags.SUPPORTS_BAMBOO, BlockTags.DRAGON_IMMUNE)
-                .tag(BlockTags.WITHER_IMMUNE)
-                .color(() -> () -> List.of(BlockTintSources.constant(0xFFFF0000)))
-                .item()
+                prov.food(DataIngredient.items(ctx), RecipeCategory.MISC, CookingBookCategory.MISC, () -> Blocks.DIAMOND_BLOCK, 1f);
+            })
+            .tag(BlockTags.SUPPORTS_BAMBOO, BlockTags.DRAGON_IMMUNE)
+            .tag(BlockTags.WITHER_IMMUNE)
+            .color(() -> () -> List.of(BlockTintSources.constant(0xFFFF0000)))
+            .item()
             .model(() -> Client::testBlockModel)
-                    .build()
-                .blockEntity(TestBlockEntity::new)
-                    .renderer(() -> TestBlockEntityRenderer::new)
-                    .build()
-                .register();
+            .build()
+            .blockEntity(TestBlockEntity::new)
+            .renderer(() -> TestBlockEntityRenderer::new)
+            .build()
+            .register();
 
     @VisibleForTesting
     public final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
-            .blockstate(() -> (ctx, prov) ->
-                    prov.create(ctx.getEntry(), prov.getBuilder()
-                            .transformTemplate(t -> t
-                                    .parent(prov.mcLoc("block/gold_block"))
-                            ).build(prov.modLoc("block/subfolder/" + ctx.getName()))))
+            .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(), prov.getBuilder()
+                    .transformTemplate(t -> t
+                            .parent(prov.mcLoc("block/gold_block")))
+                    .build(prov.modLoc("block/subfolder/" + ctx.getName()))))
             .simpleItem()
             .register();
 
@@ -290,7 +292,7 @@ public class TestMod {
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR)
-            //TODO <1.21.4> .defaultSpawnEgg(0xFF0000, 0x00FF00)
+            // TODO <1.21.4> .defaultSpawnEgg(0xFF0000, 0x00FF00)
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1))
@@ -303,7 +305,7 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
             .blockEntity(TestDummyBlockEntity::new)
-            .validBlock(() -> Blocks.DIRT)//TODO <1.21.4> now empty valid block is not allowed
+            .validBlock(() -> Blocks.DIRT)// TODO <1.21.4> now empty valid block is not allowed
             .register();
 
     @VisibleForTesting
@@ -311,67 +313,71 @@ public class TestMod {
             .fluid(
                     Identifier.withDefaultNamespace("block/water_flow"),
                     Identifier.withDefaultNamespace("block/lava_still"),
-					FluidType::new)
+                    FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
             .noBucket()
-//            .bucket()
-//                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
-//                .build()
+            // .bucket()
+            // .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
+            // .build()
             .register();
 
     @VisibleForTesting
     public final MenuEntry<ChestMenu> testmenu = registrate.object("testmenu")
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
-    
-//    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
-//            .biome(TestBiome::new)
-//            .properties(b -> b.category(Category.PLAINS)
-//                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
-//                    .precipitation(RainType.RAIN)
-//                    .depth(1)
-//                    .scale(1)
-//                    .temperature(1)
-//                    .downfall(1)
-//                    .waterColor(0x3f76e4)
-//                    .waterFogColor(0x050533))
-//            .typeWeight(BiomeType.WARM, 1000)
-//            .addDictionaryTypes(BiomeDictionary.Type.LUSH)
-//            .forceAutomaticDictionaryTypes()
-//            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
-//            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.ICE_SPIKE, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(100))
-//            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
-//            .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
-//            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
-//            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
-//            .register();
-//
-//    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
-//            .biome(TestBiome::new)
-//            .properties(b -> b.category(Category.DESERT)
-//                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(), Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
-//                    .precipitation(RainType.NONE)
-//                    .depth(1)
-//                    .scale(1)
-//                    .temperature(1)
-//                    .downfall(1)
-//                    .waterColor(0x3f76e4)
-//                    .waterFogColor(0x050533))
-//            .typeWeight(BiomeType.DESERT, 1000)
-//            .addDictionaryTypes(BiomeDictionary.Type.DRY)
-//            .forceAutomaticDictionaryTypes()
-//            .copyFeatures(() -> Biomes.DESERT)
-//            .copyCarvers(() -> Biomes.DESERT)
-//            .copySpawns(() -> Biomes.DESERT)
-//            .register();
-//
-//    private @Nullable DimensionType testdimensiontype;
-//    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
-//            .dimension(OverworldDimension::new)
-//            .hasSkyLight(false)
-//            .keepLoaded(false)
-//            .dimensionTypeCallback(t -> testdimensiontype = t)
-//            .register();
+
+    // private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
+    // .biome(TestBiome::new)
+    // .properties(b -> b.category(Category.PLAINS)
+    // .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(),
+    // Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
+    // .precipitation(RainType.RAIN)
+    // .depth(1)
+    // .scale(1)
+    // .temperature(1)
+    // .downfall(1)
+    // .waterColor(0x3f76e4)
+    // .waterFogColor(0x050533))
+    // .typeWeight(BiomeType.WARM, 1000)
+    // .addDictionaryTypes(BiomeDictionary.Type.LUSH)
+    // .forceAutomaticDictionaryTypes()
+    // .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () ->
+    // Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
+    // .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.ICE_SPIKE, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new
+    // FrequencyConfig(100))
+    // .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
+    // .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
+    // .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
+    // .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
+    // .register();
+    //
+    // private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
+    // .biome(TestBiome::new)
+    // .properties(b -> b.category(Category.DESERT)
+    // .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(),
+    // Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
+    // .precipitation(RainType.NONE)
+    // .depth(1)
+    // .scale(1)
+    // .temperature(1)
+    // .downfall(1)
+    // .waterColor(0x3f76e4)
+    // .waterFogColor(0x050533))
+    // .typeWeight(BiomeType.DESERT, 1000)
+    // .addDictionaryTypes(BiomeDictionary.Type.DRY)
+    // .forceAutomaticDictionaryTypes()
+    // .copyFeatures(() -> Biomes.DESERT)
+    // .copyCarvers(() -> Biomes.DESERT)
+    // .copySpawns(() -> Biomes.DESERT)
+    // .register();
+    //
+    // private @Nullable DimensionType testdimensiontype;
+    // private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
+    // .dimension(OverworldDimension::new)
+    // .hasSkyLight(false)
+    // .keepLoaded(false)
+    // .dimensionTypeCallback(t -> testdimensiontype = t)
+    // .register();
 
     @VisibleForTesting
     public final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", RegistryBuilder::new);
@@ -379,9 +385,9 @@ public class TestMod {
     public final RegistryEntry<TestCustomRegistryEntry, TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 
-//    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
-//            .block(Block::new)
-//            .addLayer(() -> RenderType::getTranslucent);
+    // private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
+    // .block(Block::new)
+    // .addLayer(() -> RenderType::getTranslucent);
 
     private static <T extends Block, P> BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
@@ -401,11 +407,11 @@ public class TestMod {
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
         registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
             Advancement.Builder.advancement()
-                .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
-                .display(Items.EGG,
-                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
-                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
-                .save(adv, registrate.getModid() + ":root");
+                    .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
+                    .display(Items.EGG,
+                            adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
+                            Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
+                    .save(adv, registrate.getModid() + ":root");
         });
         registrate.addDataGenerator(ProviderType.GENERIC_SERVER, provider -> provider.add(data -> {
             // generic server side provider to generate custom dimension
@@ -435,8 +441,7 @@ public class TestMod {
                                             /* ambientLight */ 0F,
                                             new DimensionType.MonsterSettings(
                                                     /* monsterSpawnLightTest */ UniformInt.of(0, 7),
-                                                    /* monsterSpawnBlockLightLimit */ 0
-                                            ),
+                                                    /* monsterSpawnBlockLightLimit */ 0),
                                             DimensionType.Skybox.OVERWORLD,
                                             CardinalLighting.Type.DEFAULT,
                                             EnvironmentAttributeMap.builder()
@@ -452,9 +457,7 @@ public class TestMod {
                                                     .set(EnvironmentAttributes.AMBIENT_SOUNDS, AmbientSounds.LEGACY_CAVE_SETTINGS)
                                                     .build(),
                                             context.lookup(Registries.TIMELINE).getOrThrow(TimelineTags.IN_OVERWORLD),
-                                            Optional.of(context.lookup(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD))
-                                    )
-                            ))
+                                            Optional.of(context.lookup(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD)))))
                             // register custom dimension for the dimension type
                             // simple single biome (plains) dimension
                             .add(Registries.LEVEL_STEM, context -> {
@@ -468,13 +471,9 @@ public class TestMod {
                                                 testDimensionType,
                                                 new NoiseBasedChunkGenerator(
                                                         new FixedBiomeSource(plains),
-                                                        overworldNoiseSettings
-                                                )
-                                        )
-                                );
+                                                        overworldNoiseSettings)));
                             }),
-                    Set.of("testmod")
-            );
+                    Set.of("testmod"));
         }));
 
         eventBus.addListener(this::onCommonSetup);
@@ -509,10 +508,13 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
-        if (testfluid.get().getBucket() != Items.AIR) throw new IllegalStateException("Expected no bucket for test fluid"); // should not crash
+        if (testfluid.get().getBucket() != Items.AIR) throw new IllegalStateException("Expected no bucket for test fluid"); // should
+                                                                                                                            // not
+                                                                                                                            // crash
     }
 
     private static class Client {
+
         private static void testBlockModel(DataGenContext<Item, BlockItem> ctx, RegistrateItemModelGenerator prov) {
             prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000));
         }

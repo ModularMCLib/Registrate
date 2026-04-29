@@ -2,6 +2,32 @@
 
 A powerful wrapper for creating and registering objects in your mod.
 
+## Fork Status
+
+This repository is the `com.modularmc.registrate` fork maintained for the ModularMCLib ecosystem. It tracks the upstream Registrate design while targeting the modern NeoForge + Minecraft `26.1` toolchain and preserving a package namespace that can be safely embedded in downstream projects.
+
+## Modern Development
+
+- Use `Java 25` for local builds and IDE sync.
+- Prefer the bundled IDEA run configurations: `Client`, `Server`, `Data Generation`, `Game Tests`, and `Game Tests (Client)`.
+- Keep fluent registration APIs in `builders`, data generation orchestration in `providers`, and shared runtime helpers in `util`.
+- Treat [`docs/architecture.md`](docs/architecture.md) as the source of truth for package responsibilities and extension points.
+- See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the day-to-day development workflow.
+
+## Code Classification
+
+- `com.modularmc.registrate`: public API roots, fork metadata, and the central registration coordinator.
+- `com.modularmc.registrate.builders`: the fluent DSL used by downstream mods to register content.
+- `com.modularmc.registrate.providers`: data generation orchestration and provider lifecycle management.
+- `com.modularmc.registrate.providers.generators`: blockstate, model, and recipe generator adapters.
+- `com.modularmc.registrate.providers.loot`: loot-table focused provider wrappers.
+- `com.modularmc.registrate.util`: runtime helpers that support event wiring, dist handling, and shared utility behavior.
+- `com.modularmc.registrate.util.entry`: strongly-typed registry handles returned by builders.
+- `com.modularmc.registrate.util.nullness`: null-safe functional helpers and package defaults.
+- `com.modularmc.registrate.test.mod`: an integration-style sample mod that exercises the public API.
+- `com.modularmc.registrate.test.gametests`: executable validation scenarios for runtime behavior.
+- `com.modularmc.registrate.test.meta`: maintenance utilities that keep generated bridge methods aligned with upstream APIs.
+
 ## Why Registrate?
 
 - Allows you to organize your mod content however you like, rather than having pieces of each object defined in scattered places

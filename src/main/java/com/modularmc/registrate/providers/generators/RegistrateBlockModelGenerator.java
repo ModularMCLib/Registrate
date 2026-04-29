@@ -2,6 +2,7 @@ package com.modularmc.registrate.providers.generators;
 
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
+
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
 import net.minecraft.client.data.models.MultiVariant;
@@ -15,7 +16,6 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.client.renderer.block.dispatch.VariantMutator;
 import net.minecraft.client.resources.model.sprite.Material;
@@ -67,7 +67,6 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
     public void run() {
         parent.genData(ProviderType.BLOCKSTATE, this);
     }
-
 
     public void create(Block block, Identifier model) {
         this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(model)));
@@ -151,8 +150,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
     private void generateAxisBlockInternal(RotatedPillarBlock block, Material side, Material end, ModelTemplate cubeColumn, ModelTemplate cubeColumnHorizontal) {
         generateAxisBlock(block,
                 plainVariant(cubeColumn.create(block, TextureMapping.column(side, end), modelOutput)),
-                plainVariant(cubeColumnHorizontal.create(block, TextureMapping.column(side, end), modelOutput))
-        );
+                plainVariant(cubeColumnHorizontal.create(block, TextureMapping.column(side, end), modelOutput)));
     }
 
     public void generateAxisBlock(RotatedPillarBlock block, MultiVariant vertical, MultiVariant horizontal) {
@@ -242,8 +240,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         blockStateOutput.accept(createStairs(block,
                 plainVariant(ModelTemplates.STAIRS_INNER.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.STAIRS_STRAIGHT.create(block, textures, modelOutput)),
-                plainVariant(ModelTemplates.STAIRS_OUTER.create(block, textures, modelOutput))
-        ));
+                plainVariant(ModelTemplates.STAIRS_OUTER.create(block, textures, modelOutput))));
     }
 
     public void generateStairsBlock(StairBlock block, String name, Material side, Material bottom, Material top) {
@@ -353,16 +350,14 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         TextureMapping textures = TextureMapping.defaultTexture(texture);
         generateFourWayBlock(block,
                 plainVariant(fencePostTemplate.create(block, textures, modelOutput)),
-                plainVariant(fenceSideTemplate.create(block, textures, modelOutput))
-        );
+                plainVariant(fenceSideTemplate.create(block, textures, modelOutput)));
     }
 
     private void generateFenceBlockInternal(FenceBlock block, String name, Material texture, ModelTemplate fencePostTemplate, ModelTemplate fenceSideTemplate) {
         TextureMapping textures = TextureMapping.defaultTexture(texture);
         generateFourWayBlock(block,
                 plainVariant(fencePostTemplate.create(modLoc("block/" + name + "_fence_post"), textures, modelOutput)),
-                plainVariant(fenceSideTemplate.create(modLoc("block/" + name + "_fence_side"), textures, modelOutput))
-        );
+                plainVariant(fenceSideTemplate.create(modLoc("block/" + name + "_fence_side"), textures, modelOutput)));
     }
 
     public void generateFenceGateBlock(FenceGateBlock block, Material texture) {
@@ -371,8 +366,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 plainVariant(ModelTemplates.FENCE_GATE_CLOSED.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.FENCE_GATE_OPEN.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.FENCE_GATE_WALL_CLOSED.create(block, textures, modelOutput)),
-                plainVariant(ModelTemplates.FENCE_GATE_WALL_OPEN.create(block, textures, modelOutput))
-        );
+                plainVariant(ModelTemplates.FENCE_GATE_WALL_OPEN.create(block, textures, modelOutput)));
     }
 
     public void generateFenceGateBlock(FenceGateBlock block, String name, Material texture) {
@@ -398,8 +392,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         blockStateOutput.accept(createWall(block,
                 plainVariant(ModelTemplates.WALL_POST.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.WALL_LOW_SIDE.create(block, textures, modelOutput)),
-                plainVariant(ModelTemplates.WALL_TALL_SIDE.create(block, textures, modelOutput))
-        ));
+                plainVariant(ModelTemplates.WALL_TALL_SIDE.create(block, textures, modelOutput))));
     }
 
     public void generateWallBlock(WallBlock block, String name, Material texture) {
@@ -413,8 +406,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         generateWallBlock(block,
                 plainVariant(postTemplate.create(baseModel.withSuffix("_post"), textures, modelOutput)),
                 plainVariant(sideTemplate.create(baseModel.withSuffix("_side"), textures, modelOutput)),
-                plainVariant(tallSideTemplate.create(baseModel.withSuffix("_side_tall"), textures, modelOutput))
-        );
+                plainVariant(tallSideTemplate.create(baseModel.withSuffix("_side_tall"), textures, modelOutput)));
     }
 
     public void generateWallBlock(WallBlock block, MultiVariant post, MultiVariant side, MultiVariant sideTall) {
@@ -428,8 +420,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.STAINED_GLASS_PANE_NOSIDE.create(block, textures, modelOutput)),
-                plainVariant(ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT.create(block, textures, modelOutput))
-        );
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT.create(block, textures, modelOutput)));
     }
 
     public void generatePaneBlock(IronBarsBlock block, String name, Material pane, Material edge) {
@@ -445,8 +436,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 plainVariant(sideTemplate.create(baseModel.withSuffix("_side"), textures, modelOutput)),
                 plainVariant(sideAltTemplate.create(baseModel.withSuffix("_side_alt"), textures, modelOutput)),
                 plainVariant(noSideTemplate.create(baseModel.withSuffix("_noside"), textures, modelOutput)),
-                plainVariant(noSideAltTemplate.create(baseModel.withSuffix("_noside_alt"), textures, modelOutput))
-        );
+                plainVariant(noSideAltTemplate.create(baseModel.withSuffix("_noside_alt"), textures, modelOutput)));
     }
 
     public void generatePaneBlock(IronBarsBlock block, MultiVariant post, MultiVariant side, MultiVariant sideAlt, MultiVariant noSide, MultiVariant noSideAlt) {
@@ -459,8 +449,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 .with(condition().term(BlockStateProperties.NORTH, false), noSide)
                 .with(condition().term(BlockStateProperties.EAST, false), noSideAlt)
                 .with(condition().term(BlockStateProperties.SOUTH, false), noSideAlt.with(Y_ROT_90))
-                .with(condition().term(BlockStateProperties.WEST, false), noSide.with(Y_ROT_270))
-        );
+                .with(condition().term(BlockStateProperties.WEST, false), noSide.with(Y_ROT_270)));
     }
 
     public void generateDoorBlock(DoorBlock block, Material bottom, Material top) {
@@ -473,8 +462,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 plainVariant(ModelTemplates.DOOR_TOP_LEFT.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.DOOR_TOP_LEFT_OPEN.create(block, textures, modelOutput)),
                 plainVariant(ModelTemplates.DOOR_TOP_RIGHT.create(block, textures, modelOutput)),
-                plainVariant(ModelTemplates.DOOR_TOP_RIGHT_OPEN.create(block, textures, modelOutput))
-        );
+                plainVariant(ModelTemplates.DOOR_TOP_RIGHT_OPEN.create(block, textures, modelOutput)));
     }
 
     public void generateDoorBlock(DoorBlock block, String name, Material bottom, Material top) {
@@ -509,8 +497,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM).create(block, textures, modelOutput)),
                 plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP).create(block, textures, modelOutput)),
                 plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN).create(block, textures, modelOutput)),
-                orientable
-        );
+                orientable);
     }
 
     public void generateTrapdoorBlock(TrapDoorBlock block, String name, Material texture, boolean orientable) {
@@ -521,8 +508,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         generateTrapdoorBlockInternal(block, baseName, texture, orientable,
                 orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM,
                 orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP,
-                orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN
-        );
+                orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN);
     }
 
     private void generateTrapdoorBlockInternal(TrapDoorBlock block, Identifier baseName, Material texture, boolean orientable, ModelTemplate bottomTemplate, ModelTemplate topTemplate, ModelTemplate openTemplate) {

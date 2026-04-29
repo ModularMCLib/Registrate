@@ -1,16 +1,18 @@
 package com.modularmc.registrate.util;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.modularmc.registrate.AbstractRegistrate;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.IModBusEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.common.NeoForge;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -23,11 +25,10 @@ import java.util.function.Consumer;
 @Log4j2
 public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
 
-
     public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(owner, EventPriority.NORMAL, evtClass, listener);
     }
-    
+
     public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         if (owner.getModEventBus() == null) {
             if (!waitingModListeners.contains(owner, evtClass)) {
@@ -40,7 +41,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
             seenModBus = true;
             for (var waitingListener : waitingModListeners.row(owner).entrySet()) {
                 for (var pair : waitingListener.getValue()) {
-                    //noinspection unchecked
+                    // noinspection unchecked
                     OneTimeEventReceiver.<T>addListener(owner.getModEventBus(), pair.getKey(), (Class<? super T>) waitingListener.getKey(), (Consumer<? super T>) pair.getValue());
                 }
             }
@@ -48,20 +49,20 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
         }
         OneTimeEventReceiver.<T>addListener(owner.getModEventBus(), priority, evtClass, listener);
     }
-    
+
     public static <T extends Event> void addForgeListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addForgeListener(EventPriority.NORMAL, evtClass, listener);
     }
-    
+
     public static <T extends Event> void addForgeListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(NeoForge.EVENT_BUS, priority, evtClass, listener);
     }
-    
+
     @Deprecated
     public static <T extends Event> void addListener(IEventBus bus, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(bus, EventPriority.NORMAL, evtClass, listener);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Deprecated
     public static <T extends Event> void addListener(IEventBus bus, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {

@@ -1,7 +1,5 @@
 package com.modularmc.registrate.builders;
 
-import com.google.common.annotations.Beta;
-import com.google.common.base.Preconditions;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
@@ -11,6 +9,7 @@ import com.modularmc.registrate.util.RegistrateDistExecutor;
 import com.modularmc.registrate.util.entry.FluidEntry;
 import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.*;
+
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.resources.model.sprite.Material;
@@ -38,7 +37,10 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
+import com.google.common.annotations.Beta;
+import com.google.common.base.Preconditions;
 import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,24 +52,26 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     @FunctionalInterface
     public interface FluidTypeFactory {
+
         FluidType create(FluidType.Properties properties);
     }
 
     @FunctionalInterface
     public interface FluidFactory<T> {
+
         T create(BaseFlowingFluid.Properties properties);
     }
-
 
     private @Nullable NonNullSupplier<Supplier<FluidModel.Unbaked>> model;
 
     private @Nullable NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension;
 
     /**
-     * Register a client extension for this block. The {@link IClientBlockExtensions} instance can be shared across many items.
+     * Register a client extension for this block. The {@link IClientBlockExtensions} instance can be shared across many
+     * items.
      *
      * @param clientExtension
-     *            The client extension to register for this block
+     *                        The client extension to register for this block
      * @return this {@link BlockBuilder}
      */
     public FluidBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension) {
@@ -109,18 +113,19 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default ({@link FluidType}) and fluid class ({@link BaseFlowingFluid.Flowing}).
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default ({@link FluidType})
+     * and fluid class ({@link BaseFlowingFluid.Flowing}).
      *
      * @param <P>
-     *            Parent object type
+     *                 Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                 The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                 The parent object
      * @param name
-     *            Name of the entry being built
+     *                 Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                 A callback used to actually register the built entry
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
@@ -129,20 +134,21 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class ({@link BaseFlowingFluid.Flowing}).
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class
+     * ({@link BaseFlowingFluid.Flowing}).
      *
      * @param <P>
-     *            Parent object type
+     *                    Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                    The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                    The parent object
      * @param name
-     *            Name of the entry being built
+     *                    Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                    A callback used to actually register the built entry
      * @param typeFactory
-     *            A factory that creates the fluid type
+     *                    A factory that creates the fluid type
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
@@ -151,20 +157,21 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class ({@link BaseFlowingFluid.Flowing}).
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class
+     * ({@link BaseFlowingFluid.Flowing}).
      *
      * @param <P>
-     *            Parent object type
+     *                  Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                  The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                  The parent object
      * @param name
-     *            Name of the entry being built
+     *                  Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                  A callback used to actually register the built entry
      * @param fluidType
-     *            An existing and registered fluid type.
+     *                  An existing and registered fluid type.
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
@@ -173,96 +180,103 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default ({@link FluidType}) and fluid class ({@link BaseFlowingFluid.Flowing}).
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default ({@link FluidType})
+     * and fluid class ({@link BaseFlowingFluid.Flowing}).
      *
      * @param <T>
-     *            The type of the builder
+     *                     The type of the builder
      * @param <P>
-     *            Parent object type
+     *                     Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                     The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                     The parent object
      * @param name
-     *            Name of the entry being built
+     *                     Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                     A callback used to actually register the built entry
      * @param fluidFactory
-     *            A factory that creates the flowing fluid
+     *                     A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        FluidFactory<T> fluidFactory) {
+                                                                            FluidFactory<T> fluidFactory) {
         return create(owner, parent, name, callback, FluidType::new, fluidFactory);
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that
+     * alternate initialization strategies can be done in subclasses.
      * <p>
      * The fluid will be assigned the following data:
      * <ul>
      * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>A default {@link BaseFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
-     * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
-     * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
+     * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture
+     * (via {@link #defaultBlock()})</li>
+     * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid
+     * (via {@link #defaultBucket()})</li>
      * </ul>
      *
      * @param <T>
-     *            The type of the builder
+     *                     The type of the builder
      * @param <P>
-     *            Parent object type
+     *                     Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                     The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                     The parent object
      * @param name
-     *            Name of the entry being built
+     *                     Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                     A callback used to actually register the built entry
      * @param typeFactory
-     *            A factory that creates the fluid type
+     *                     A factory that creates the fluid type
      * @param fluidFactory
-     *            A factory that creates the flowing fluid
+     *                     A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+                                                                            FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
         FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, typeFactory, fluidFactory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket();
         return ret;
     }
 
     /**
-     * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that
+     * alternate initialization strategies can be done in subclasses.
      * <p>
      * The fluid will be assigned the following data:
      * <ul>
      * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>A default {@link BaseFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
-     * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
-     * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
+     * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture
+     * (via {@link #defaultBlock()})</li>
+     * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid
+     * (via {@link #defaultBucket()})</li>
      * </ul>
      *
      * @param <T>
-     *            The type of the builder
+     *                     The type of the builder
      * @param <P>
-     *            Parent object type
+     *                     Parent object type
      * @param owner
-     *            The owning {@link AbstractRegistrate} object
+     *                     The owning {@link AbstractRegistrate} object
      * @param parent
-     *            The parent object
+     *                     The parent object
      * @param name
-     *            Name of the entry being built
+     *                     Name of the entry being built
      * @param callback
-     *            A callback used to actually register the built entry
+     *                     A callback used to actually register the built entry
      * @param fluidType
-     *            An existing and registered fluid type
+     *                     An existing and registered fluid type
      * @param fluidFactory
-     *            A factory that creates the flowing fluid
+     *                     A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+                                                                            NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
         return new FluidBuilder<>(owner, parent, name, callback, fluidType, fluidFactory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket();
     }
@@ -303,11 +317,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Modify the properties of the fluid type. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * Modify the properties of the fluid type. Modifications are done lazily, but the passed function is composed with
+     * the current one, and as such this method can be called multiple times to perform
      * different operations.
      *
      * @param cons
-     *            The action to perform on the attributes
+     *             The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> properties(NonNullConsumer<FluidType.Properties> cons) {
@@ -316,11 +331,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Modify the properties of the flowing fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * Modify the properties of the flowing fluid. Modifications are done lazily, but the passed function is composed
+     * with the current one, and as such this method can be called multiple times to perform
      * different operations.
      *
      * @param cons
-     *            The action to perform on the attributes
+     *             The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> fluidProperties(NonNullConsumer<BaseFlowingFluid.Properties> cons) {
@@ -329,7 +345,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#toEnglishName(String)}. This is the default, so it is generally not necessary to call, unless for
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#toEnglishName(String)}. This is the
+     * default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      *
      * @return this {@link FluidBuilder}
@@ -342,7 +359,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * Set the translation for this fluid.
      *
      * @param name
-     *            A localized English name
+     *             A localized English name
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> lang(String name) {
@@ -350,12 +367,13 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a standard {@link BaseFlowingFluid.Source} for this fluid which will be built and registered along with this fluid.
+     * Create a standard {@link BaseFlowingFluid.Source} for this fluid which will be built and registered along with
+     * this fluid.
      *
      * @return this {@link FluidBuilder}
      * @see #source(NonNullFunction)
      * @throws IllegalStateException
-     *             If {@link #source(NonNullFunction)} has been called before this method
+     *                               If {@link #source(NonNullFunction)} has been called before this method
      */
     public FluidBuilder<T, P> defaultSource() {
         if (this.defaultSource != null) {
@@ -366,10 +384,11 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a {@link BaseFlowingFluid} for this fluid, which is created by the given factory, and which will be built and registered along with this fluid.
+     * Create a {@link BaseFlowingFluid} for this fluid, which is created by the given factory, and which will be built
+     * and registered along with this fluid.
      *
      * @param factory
-     *            A factory for the fluid, which accepts the properties and returns a new fluid
+     *                A factory for the fluid, which accepts the properties and returns a new fluid
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> source(NonNullFunction<BaseFlowingFluid.Properties, ? extends BaseFlowingFluid> factory) {
@@ -379,12 +398,14 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a standard {@link LiquidBlock} for this fluid, building it immediately, and not allowing for further configuration.
+     * Create a standard {@link LiquidBlock} for this fluid, building it immediately, and not allowing for further
+     * configuration.
      *
      * @return this {@link FluidBuilder}
      * @see #block()
      * @throws IllegalStateException
-     *             If {@link #block()} or {@link #block(NonNullBiFunction)} has been called before this method
+     *                               If {@link #block()} or {@link #block(NonNullBiFunction)} has been called before
+     *                               this method
      */
     public FluidBuilder<T, P> defaultBlock() {
         if (this.defaultBlock != null) {
@@ -395,7 +416,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a standard {@link LiquidBlock} for this fluid, and return the builder for it so that further customization can be done.
+     * Create a standard {@link LiquidBlock} for this fluid, and return the builder for it so that further customization
+     * can be done.
      *
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
@@ -404,12 +426,13 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a {@link LiquidBlock} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
+     * Create a {@link LiquidBlock} for this fluid, which is created by the given factory, and return the builder for it
+     * so that further customization can be done.
      *
      * @param <B>
-     *            The type of the block
+     *                The type of the block
      * @param factory
-     *            A factory for the block, which accepts the block object and properties and returns a new block
+     *                A factory for the block, which accepts the block object and properties and returns a new block
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
     public <B extends LiquidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<T, BlockBehaviour.Properties, ? extends B> factory) {
@@ -420,9 +443,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         final NonNullSupplier<T> supplier = asSupplier();
         final var lightLevel = Lazy.of(() -> fluidType.get().getLightLevel());
         final ToIntFunction<BlockState> lightLevelInt = $ -> lightLevel.get();
-        final var ret =  getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
-            .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
-            .properties(p -> p.lightLevel(lightLevelInt))
+        final var ret = getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
+                .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
+                .properties(p -> p.lightLevel(lightLevelInt))
                 .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
         this.fluidProperties(p -> p.block(ret.asSupplier()));
         return ret;
@@ -438,12 +461,14 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a standard {@link BucketItem} for this fluid, building it immediately, and not allowing for further configuration.
+     * Create a standard {@link BucketItem} for this fluid, building it immediately, and not allowing for further
+     * configuration.
      *
      * @return this {@link FluidBuilder}
      * @see #bucket()
      * @throws IllegalStateException
-     *             If {@link #bucket()} or {@link #bucket(NonNullBiFunction)} has been called before this method
+     *                               If {@link #bucket()} or {@link #bucket(NonNullBiFunction)} has been called before
+     *                               this method
      */
     public FluidBuilder<T, P> defaultBucket() {
         if (this.defaultBucket != null) {
@@ -454,7 +479,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a standard {@link BucketItem} for this fluid, and return the builder for it so that further customization can be done.
+     * Create a standard {@link BucketItem} for this fluid, and return the builder for it so that further customization
+     * can be done.
      *
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
@@ -463,12 +489,14 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     /**
-     * Create a {@link BucketItem} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
+     * Create a {@link BucketItem} for this fluid, which is created by the given factory, and return the builder for it
+     * so that further customization can be done.
      *
      * @param <I>
-     *            The type of the bucket item
+     *                The type of the bucket item
      * @param factory
-     *            A factory for the bucket item, which accepts the fluid object supplier and properties and returns a new item
+     *                A factory for the bucket item, which accepts the fluid object supplier and properties and returns
+     *                a new item
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
     public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<BaseFlowingFluid, Item.Properties, ? extends I> factory) {
@@ -482,7 +510,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
         final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
-            .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
+                .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
         this.fluidProperties(p -> p.bucket(ret.asSupplier()));
         return ret;
@@ -501,7 +529,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * Assign {@link TagKey}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      *
      * @param tags
-     *            The tags to assign
+     *             The tags to assign
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
@@ -509,7 +537,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
-                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
+                    prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
@@ -519,7 +547,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * Remove {@link TagKey}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
      *
      * @param tags
-     *            The tags to remove
+     *             The tags to remove
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs

@@ -1,7 +1,5 @@
 package com.modularmc.registrate.builders;
 
-import org.jspecify.annotations.Nullable;
-
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.util.OneTimeEventReceiver;
 import com.modularmc.registrate.util.RegistrateDistExecutor;
@@ -22,10 +20,12 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, MenuBuilder<T, S, P>> {
-    
+import org.jspecify.annotations.Nullable;
+
+public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>, P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, MenuBuilder<T, S, P>> {
+
     public interface MenuFactory<T extends AbstractContainerMenu> {
-        
+
         T create(MenuType<T> type, int windowId, Inventory inv);
     }
 
@@ -33,12 +33,12 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
 
         T create(MenuType<T> type, int windowId, Inventory inv, @Nullable RegistryFriendlyByteBuf buffer);
     }
-    
+
     public interface ScreenFactory<M extends AbstractContainerMenu, T extends Screen & MenuAccess<M>> {
-        
+
         T create(M menu, Inventory inv, Component displayName);
     }
-    
+
     private final ForgeMenuFactory<T> factory;
     private final NonNullSupplier<ScreenFactory<T, S>> screenFactory;
 

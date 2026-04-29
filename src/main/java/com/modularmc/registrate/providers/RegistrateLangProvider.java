@@ -2,6 +2,7 @@ package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.data.LanguageProvider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -74,7 +76,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
                 .collect(Collectors.joining(" "));
     }
 
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
+    @SuppressWarnings({ "unchecked", "ConstantConditions" })
     public <T> String getAutomaticName(NonNullSupplier<? extends T> sup, ResourceKey<? extends Registry<T>> registry) {
         return toEnglishName(((Registry<Registry<T>>) BuiltInRegistries.REGISTRY).getValue(registry.identifier()).getKey(sup.get()).getPath());
     }
@@ -129,14 +131,14 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
 
     private static final String NORMAL_CHARS =
             /* lowercase */ "abcdefghijklmn\u00F1opqrstuvwxyz" +
-            /* uppercase */ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            /*  numbers  */ "0123456789" +
-            /*  special  */ "()[]{}<>\u25C1\u25B7_,;.?!/\\'";
+                    /* uppercase */ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                    /* numbers */ "0123456789" +
+                    /* special */ "()[]{}<>\u25C1\u25B7_,;.?!/\\'";
     private static final String UPSIDE_DOWN_CHARS =
             /* lowercase */ "\u0250q\u0254p\u01DD\u025Fb\u0265\u0131\u0638\u029E\u05DF\u026Fuuodb\u0279s\u0287n\u028C\u028Dx\u028Ez" +
-            /* uppercase */ "\u2C6F\u15FA\u0186\u15E1\u018E\u2132\u2141HI\u017F\u029E\uA780WNO\u0500\u1F49\u1D1AS\u27D8\u2229\u039BMX\u028EZ" +
-            /*  numbers  */ "0\u0196\u1105\u0190\u3123\u03DB9\u312586" +
-            /*  special  */ ")(][}{><\u25B7\u25C1\u203E'\u061B\u02D9\u00BF\u00A1\\/,";
+                    /* uppercase */ "\u2C6F\u15FA\u0186\u15E1\u018E\u2132\u2141HI\u017F\u029E\uA780WNO\u0500\u1F49\u1D1AS\u27D8\u2229\u039BMX\u028EZ" +
+                    /* numbers */ "0\u0196\u1105\u0190\u3123\u03DB9\u312586" +
+                    /* special */ ")(][}{><\u25B7\u25C1\u203E'\u061B\u02D9\u00BF\u00A1\\/,";
 
     static {
         if (NORMAL_CHARS.length() != UPSIDE_DOWN_CHARS.length()) {
@@ -151,14 +153,14 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             char c = normal.charAt(i);
             if (c == '%') {
                 String fmtArg = "";
-                while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit lazy
+                while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit
+                                                                                               // lazy
                     if (fmtArg.equals("%") && c == 's') {
                         fmtArg = "%" + formatIndex + "$s";
                         formatIndex++;
                         i++;
                         break;
-                    }
-                    else if (c == '$') {
+                    } else if (c == '$') {
                         formatIndex++;
                     }
                     fmtArg += c;

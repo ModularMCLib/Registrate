@@ -1,7 +1,5 @@
 package com.modularmc.registrate.builders;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateLangProvider;
@@ -11,17 +9,20 @@ import com.modularmc.registrate.util.entry.RegistryEntry;
 import com.modularmc.registrate.util.nullness.NonNullBiFunction;
 import com.modularmc.registrate.util.nullness.NonNullFunction;
 import com.modularmc.registrate.util.nullness.NonNullSupplier;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import net.minecraft.core.Registry;
 import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 
@@ -31,7 +32,8 @@ import java.util.Arrays;
  * Provides the most basic functionality, and some utility methods that remove the need to pass the registry class.
  *
  * @param <R>
- *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
+ *            Type of the registry for the current object. This is the concrete base class that all registry entries
+ *            must extend, and the type used for the forge registry itself.
  * @param <T>
  *            Actual type of the object being built.
  * @param <P>
@@ -43,15 +45,15 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
-    @Getter(onMethod_ = {@Override})
+    @Getter(onMethod_ = { @Override })
     private final AbstractRegistrate<?> owner;
-    @Getter(onMethod_ = {@Override})
+    @Getter(onMethod_ = { @Override })
     private final P parent;
-    @Getter(onMethod_ = {@Override})
+    @Getter(onMethod_ = { @Override })
     private final String name;
     @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
-    @Getter(onMethod_ = {@Override})
+    @Getter(onMethod_ = { @Override })
     private final ResourceKey<? extends Registry<R>> registryKey;
 
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
@@ -63,7 +65,8 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     private boolean isOptional = false;
 
     /**
-     * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values from the builder.
+     * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values
+     * from the builder.
      *
      * @return The built entry
      */
@@ -88,9 +91,9 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
      * Tag this entry with a tag (or tags) of the correct type. Multiple calls will add additional tags.
      *
      * @param type
-     *            The provider type (which must be a tag provider)
+     *             The provider type (which must be a tag provider)
      * @param tags
-     *            The tags to add
+     *             The tags to add
      * @return this {@link Builder}
      */
     @SuppressWarnings("unchecked")
@@ -108,9 +111,9 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
 
     /**
      * Mark this entry as optional when generating tags
-     * */
+     */
     @SuppressWarnings("unchecked")
-    public S asOptional(){
+    public S asOptional() {
         isOptional = true;
         return (S) this;
     }
@@ -122,12 +125,13 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     /**
-     * Remove a tag (or tags) from this entry of a given type. Useful to remove default tags on fluids, for example. Multiple calls will remove additional tags.
+     * Remove a tag (or tags) from this entry of a given type. Useful to remove default tags on fluids, for example.
+     * Multiple calls will remove additional tags.
      *
      * @param type
-     *            The provider type (which must be a tag provider)
+     *             The provider type (which must be a tag provider)
      * @param tags
-     *            The tags to remove
+     *             The tags to remove
      * @return this {@link Builder}
      */
     @SuppressWarnings("unchecked")
@@ -142,11 +146,13 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     /**
-     * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, ResourceKey)}). Generally, specific helpers from concrete
+     * Set the lang key for this entry to the default value (specified by
+     * {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, ResourceKey)}). Generally, specific helpers from
+     * concrete
      * builders should be used instead.
      *
      * @param langKeyProvider
-     *            A function to get the translation key from the entry
+     *                        A function to get the translation key from the entry
      * @return this {@link Builder}
      */
     public S lang(NonNullFunction<T, String> langKeyProvider) {
@@ -154,12 +160,13 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     /**
-     * Set the lang key for this entry to the specified name. Generally, specific helpers from concrete builders should be used instead.
+     * Set the lang key for this entry to the specified name. Generally, specific helpers from concrete builders should
+     * be used instead.
      *
      * @param langKeyProvider
-     *            A function to get the translation key from the entry
+     *                        A function to get the translation key from the entry
      * @param name
-     *            The name to use
+     *                        The name to use
      * @return this {@link Builder}
      */
     public S lang(NonNullFunction<T, String> langKeyProvider, String name) {
@@ -170,8 +177,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
         return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
     }
 
-    public ResourceKey<R> getResourceKey(){
+    public ResourceKey<R> getResourceKey() {
         return ResourceKey.create(getRegistryKey(), Identifier.fromNamespaceAndPath(getOwner().getModid(), getName()));
     }
-
 }

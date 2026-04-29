@@ -1,6 +1,7 @@
 package com.modularmc.registrate.providers;
 
 import com.modularmc.registrate.AbstractRegistrate;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.PackOutput;
@@ -20,19 +21,22 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
 
     CompletableFuture<TagsProvider.TagLookup<T>> contentsGetter();
 
-	ResourceKey<? extends Registry<T>> registry();
+    ResourceKey<? extends Registry<T>> registry();
 
     TagBuilder rawBuilder(TagKey<T> key);
 
     interface Key<T> extends RegistrateTagsProvider<T> {
+
         TagAppender<ResourceKey<T>, T> tag(TagKey<T> key);
     }
 
     interface Intrinsic<T> extends RegistrateTagsProvider<T> {
+
         TagAppender<T, T> tag(TagKey<T> key);
     }
 
     class Impl<T> extends KeyTagProvider<T> implements RegistrateTagsProvider.Key<T> {
+
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends Impl<T>> type;
         private final String name;
@@ -76,13 +80,13 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         }
 
         @Override
-		public ResourceKey<? extends Registry<T>> registry() {
-			return registryKey;
-		}
-
-	}
+        public ResourceKey<? extends Registry<T>> registry() {
+            return registryKey;
+        }
+    }
 
     class IntrinsicImpl<T> extends IntrinsicHolderTagsProvider<T> implements RegistrateTagsProvider.Intrinsic<T> {
+
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends IntrinsicImpl<T>> type;
         private final String name;
@@ -125,9 +129,9 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
             return createContentsProvider();
         }
 
-		@Override
-		public ResourceKey<? extends Registry<T>> registry() {
-			return registryKey;
-		}
+        @Override
+        public ResourceKey<? extends Registry<T>> registry() {
+            return registryKey;
+        }
     }
 }

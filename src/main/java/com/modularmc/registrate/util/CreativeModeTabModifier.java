@@ -1,17 +1,18 @@
 package com.modularmc.registrate.util;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public final class CreativeModeTabModifier implements CreativeModeTab.Output {
+
     private final Supplier<FeatureFlagSet> flags;
     private final BooleanSupplier hasPermissions;
     private final BiConsumer<ItemStack, CreativeModeTab.TabVisibility> acceptFunc;
@@ -22,14 +23,14 @@ public final class CreativeModeTabModifier implements CreativeModeTab.Output {
         this.flags = flags;
         this.hasPermissions = hasPermissions;
         this.acceptFunc = acceptFunc;
-		this.parameters = parameters;
-	}
+        this.parameters = parameters;
+    }
 
     public FeatureFlagSet getFlags() {
         return flags.get();
     }
 
-    public CreativeModeTab.ItemDisplayParameters getParameters(){
+    public CreativeModeTab.ItemDisplayParameters getParameters() {
         return parameters.get();
     }
 

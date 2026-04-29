@@ -1,13 +1,10 @@
 package com.modularmc.registrate.providers.loot;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.providers.ProviderType;
 import com.modularmc.registrate.providers.RegistrateProvider;
 import com.modularmc.registrate.util.nullness.NonNullConsumer;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.WritableRegistry;
@@ -15,16 +12,20 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.*;
@@ -45,6 +46,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
 
         static <T extends RegistrateLootTables> LootType<T> register(String name, ContextKeySet set, TriFunction<HolderLookup.Provider, AbstractRegistrate<?>, Consumer<T>, T> factory) {
             LootType<T> type = new LootType<T>() {
+
                 @Override
                 public T getLootCreator(HolderLookup.Provider provider, AbstractRegistrate<?> parent, Consumer<T> callback) {
                     return factory.apply(provider, parent, callback);
@@ -76,7 +78,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         this.provider = provider;
     }
 
-    public HolderLookup.Provider getProvider(){
+    public HolderLookup.Provider getProvider() {
         return provider.getNow(null);
     }
 
@@ -103,7 +105,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         this.lootActions.put(set, action);
     }
 
-    private LootTableSubProvider getLootCreator(HolderLookup. Provider provider, AbstractRegistrate<?> parent, LootType<?> type) {
+    private LootTableSubProvider getLootCreator(HolderLookup.Provider provider, AbstractRegistrate<?> parent, LootType<?> type) {
         RegistrateLootTables creator = type.getLootCreator(provider, parent, cons -> specialLootActions.get(type).forEach(c -> c.accept(cons)));
         currentLootCreators.add(creator);
         return creator;

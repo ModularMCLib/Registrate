@@ -1,11 +1,8 @@
 package com.modularmc.registrate.providers;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
 import com.modularmc.registrate.AbstractRegistrate;
 import com.modularmc.registrate.util.DebugMarkers;
-import lombok.extern.log4j.Log4j2;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.CachedOutput;
@@ -13,7 +10,12 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
+import lombok.extern.log4j.Log4j2;
 import org.jspecify.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -47,31 +49,31 @@ public class RegistrateDataProvider implements DataProvider {
 
         // For now, generate everything together
         /*
-        EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
-        if (event.includeServer()) {
-            sides.add(LogicalSide.SERVER);
-        }
-        if (event.includeClient()) {
-            sides.add(LogicalSide.CLIENT);
-        }
-        */
+         * EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
+         * if (event.includeServer()) {
+         * sides.add(LogicalSide.SERVER);
+         * }
+         * if (event.includeClient()) {
+         * sides.add(LogicalSide.CLIENT);
+         * }
+         */
 
-        //log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        // log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
         log.debug(DebugMarkers.DATA, "Gathering providers");
         Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
-        for (DataProviderInitializer.Sorted sorted :parent.getDataGenInitializer().getSortedProviders()) {
+        for (DataProviderInitializer.Sorted sorted : parent.getDataGenInitializer().getSortedProviders()) {
             ProviderType<?> type = sorted.type();
             var lookup = registriesLookup;
             if (sorted.parent() != null) lookup = ((RegistrateLookupFillerProvider) known.get(sorted.parent())).getFilledProvider();
             RegistrateProvider prov = ProviderType.create(type, parent, event, known, lookup);
             if (prov instanceof RegistrateTagsProvider<?> tagsProvider && TAG_TYPES.get(tagsProvider.registry()) != type) {
-				throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
+                throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
             }
             known.put(type, prov);
             // if (sides.contains(prov.getSide())) {
-                log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
-                subProviders.put(type, prov);
-            //}
+            log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
+            subProviders.put(type, prov);
+            // }
         }
     }
 
@@ -83,7 +85,7 @@ public class RegistrateDataProvider implements DataProvider {
             for (Map.Entry<ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
                 log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
                 list.add(e.getValue().run(cache));
-            };
+            } ;
 
             return CompletableFuture.allOf(list.toArray(CompletableFuture[]::new));
         });
@@ -104,5 +106,4 @@ public class RegistrateDataProvider implements DataProvider {
     public <T> void putSubProvider(GeneratorType<? extends T> type, T gen) {
         subGenerators.put(type, gen);
     }
-
 }
