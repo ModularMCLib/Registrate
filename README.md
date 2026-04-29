@@ -2,13 +2,43 @@
 
 A powerful wrapper for creating and registering objects in your mod.
 
+## Fork Status
+
+This repository is the `com.modularmc.registrate` fork maintained for the ModularMCLib ecosystem. It tracks the upstream Registrate design while targeting the modern NeoForge + Minecraft `26.1` toolchain and preserving a package namespace that can be safely embedded in downstream projects.
+
+## Modern Development
+
+- Use `Java 25` for local builds and IDE sync.
+- Prefer the bundled IDEA run configurations: `Client`, `Server`, `Data Generation`, `Game Tests`, and `Game Tests (Client)`.
+- Keep fluent registration APIs in `builders`, data generation orchestration in `providers`, public reusable helpers in `util`, and implementation plumbing in `internal`.
+- Treat [`docs/architecture.md`](docs/architecture.md) as the source of truth for package responsibilities and extension points.
+- See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the day-to-day development workflow.
+
+## Code Classification
+
+- `com.modularmc.registrate`: public API roots, minimal library bootstrap, and the central registration coordinator.
+- `com.modularmc.registrate.builders`: the fluent DSL used by downstream mods to register content.
+- `com.modularmc.registrate.providers`: data generation orchestration and provider lifecycle management.
+- `com.modularmc.registrate.providers.generators`: blockstate, model, and recipe generator adapters.
+- `com.modularmc.registrate.providers.loot`: loot-table focused provider wrappers.
+- `com.modularmc.registrate.util`: public shared helpers that remain part of the reusable library surface.
+- `com.modularmc.registrate.util.entry`: strongly-typed registry handles returned by builders.
+- `com.modularmc.registrate.util.nullness`: null-safe functional helpers and package defaults.
+- `com.modularmc.registrate.internal`: non-API implementation details extracted from the core runtime.
+- `com.modularmc.registrate.internal.event`: one-shot event wiring used by builders and registration lifecycle hooks.
+- `com.modularmc.registrate.internal.lifecycle`: per-instance lifecycle bridges that keep NeoForge event hookups centralized without collapsing multiple mods into one shared runtime.
+- `com.modularmc.registrate.internal.util`: dist-gated execution and internal logging helpers.
+- `com.modularmc.registrate.test.mod`: the integration-style sample mod where non-library showcase behavior should live.
+- `com.modularmc.registrate.test.gametests`: executable validation scenarios for runtime behavior.
+- `com.modularmc.registrate.test.meta`: maintenance utilities that keep generated bridge methods aligned with upstream APIs.
+
 ## Why Registrate?
 
 - Allows you to organize your mod content however you like, rather than having pieces of each object defined in scattered places
 - Simple fluent API
 - Open to extension, build and register custom objects and data
 - Automatic data generation with sane defaults
-- Shadeable, contains no mod, only code
+- Usable as a standalone NeoForge library mod and as a declared dependency for downstream mods
 
 ## How to Use
 
@@ -65,70 +95,25 @@ To get an overview of the different APIs and methods, check out the [Javadocs](h
 
 ## Project Setup
 
-Registrate can be installed in the mods folder as a typical dependency, but since it does not have a mod, it can also be pre-packaged into your mod. You can do this by making use of Forges Jar-in-Jar system.
+For this `26.1` fork, the preferred integration model is to depend on Registrate as a normal NeoForge library mod and declare it as a required dependency in your own metadata. Bundling remains possible for tightly controlled distributions, but standalone dependency loading is the default posture for this branch.
 
-[See here for more info on Forges Jar-in-Jar system](https://forge.gemwire.uk/wiki/Jar-in-jar).
-
-To get started you **MUST** enable the Jar-in-Jar system, you can do this by adding the following code anywhere in your build script:
-
-```gradle
-jarJar.enable()
-```
-
-Then, make sure the jarJar artifact is reobfuscated.
-
-```groovy
-reobf {
-    jarJar { }
-}
-
-tasks.jarJar.finalizedBy('reobfJarJar')
-```
-
-Finally, the dependency itself must be added. First add my maven repository,
-
-```groovy
-repositories {
-    maven { // Registrate
-        url "https://maven.tterrag.com/"
-    }
-    mavenLocal()
-}
-```
-
-and then the Registrate dependency to the implementation and jarJar configurations.
+Add the library to your Gradle dependencies:
 
 ```groovy
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}" // This should alread
-    
-    // MC<minecraft_version>-<registrate_version>
-    implementation fg.deobf("com.tterrag.registrate:Registrate:MC1.19.3-1.1.6")
-    // [MC<minecraft_version>,MC<next_minecraft_version>)
-    jarJar(group: 'com.tterrag.registrate', name: 'Registrate', version: "[MC1.19.3,MC1.20)")
-}
-```
-<details>
-
-<summary>Additional JarJar Note</summary>
-
-By default the jar containing your mod & registrate will have a `-all` suffix and the normal jar file will not contain registrate.
-You would want to share around this `-all` jar, as that contains registrate and any other libs you have pre-packaged.
-
-You can change this though with the following code, this changes the `-all` jar to no longer have a suffix, and the default main jar to be given a `-slim` suffix.
-Essentially swapping the 2 jars [_you now would want to share the jar with no suffix appended_].
-
-```groovy
-tasks.jarJar.configure {
-    // remove '-all' from jarJar jar file
-	classifier ''
-}
-
-jar {
-    // this now conflicts with jarJar as filenames are the same
-    // append a `-slim` to this jar, as this jar contains no pre-packaged libs
-    classifier 'slim'
+    implementation "com.modularmc.registrate:registrate:${registrate_version}"
 }
 ```
 
-</details>
+Then declare `registrate` as a required dependency in your `neoforge.mods.toml`:
+
+```toml
+[[dependencies.yourmodid]]
+modId="registrate"
+type="required"
+versionRange="[2.0.0,)"
+ordering="AFTER"
+side="BOTH"
+```
+
+If you intentionally embed the library instead of loading it as a separate mod, keep your packaging and metadata strategy explicit so downstream debugging still has a clear ownership boundary.

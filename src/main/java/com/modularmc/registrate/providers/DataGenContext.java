@@ -1,0 +1,47 @@
+package com.modularmc.registrate.providers;
+
+import com.modularmc.registrate.builders.base.Builder;
+import com.modularmc.registrate.util.nullness.NonNullSupplier;
+
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Value;
+import lombok.experimental.Delegate;
+
+/**
+ * A context bean passed to data generator callbacks. Contains the entry that data is being created for, and some
+ * metadata about the entry.
+ *
+ * @param <R>
+ *            Type of the registry to which the entry belongs
+ * @param <E>
+ *            Type of the object for which data is being generated
+ */
+@Value
+public class DataGenContext<R, E extends R> implements NonNullSupplier<E> {
+
+    @Getter(AccessLevel.NONE)
+    @Delegate
+    NonNullSupplier<E> entry;
+    String name;
+    Identifier id;
+
+    @SuppressWarnings("null")
+    public E getEntry() {
+        return entry.get();
+    }
+
+    @Deprecated
+    public static <R, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, ResourceKey<? extends Registry<R>> type) {
+        return from(builder);
+    }
+
+    public static <R, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder) {
+        return new DataGenContext<>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), builder.getRegistryKey())), builder.getName(),
+                Identifier.fromNamespaceAndPath(builder.getOwner().getModid(), builder.getName()));
+    }
+}

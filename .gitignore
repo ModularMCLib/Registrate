@@ -1,32 +1,27 @@
-/download
-/eclipseBin
-/logs
+build/
+*.ipr
+run/
+*.iws
+out/
+*.iml
+.gradle/
+output/
+bin/
+libs/
 
-## gradle
-/.gradle
-/build
+.classpath
+*/.factorypath
+.project
+.idea/
+.kotlin/
+classes/
+.metadata
+.vscode
+.eclipse
+.settings
+*.launch
+.architectury-transformer/debug.log
+**/resources/.cache/
 
-## ForgeGradle
-/run
-/*.launch
-
-## eclipse
-/eclipse
-/.metadata
-/.classpath
-/.project
-/bin
-
-## intellij
-/out
-/.idea
-/*.iml
-/*.ipr
-/*.iws
-/atlassian-ide-plugin.xml
-
-## gedit
-*~
-/revapi-standalone-0.11.5-standalone/
-
-runs/
+*.patch
+*.DS_Store

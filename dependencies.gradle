@@ -1,0 +1,17 @@
+dependencies {
+    compileOnly(libs.jetbrains.annotations)
+
+    testImplementation(libs.testframework.get())
+
+    // Standard runtime mods //
+    localRuntime(libs.testframework)
+
+    renderNurseCfg(libs.renderNurse)
+
+    //////////////////////////////////////////////////////
+    // Runtime mods for dev testing with unclean client //
+    //////////////////////////////////////////////////////
+
+    //////////////////////////
+
+}
