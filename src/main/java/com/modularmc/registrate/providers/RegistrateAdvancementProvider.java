@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -34,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-@Log4j2
 public class RegistrateAdvancementProvider implements RegistrateProvider, Consumer<AdvancementHolder> {
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
