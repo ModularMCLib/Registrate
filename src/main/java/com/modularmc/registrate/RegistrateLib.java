@@ -20,6 +20,7 @@ public final class RegistrateLib {
 
     public static final String MOD_ID = "registratelib";
     public static final String MOD_NAME = "Registrate Lib";
+
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
     public RegistrateLib(IEventBus modEventBus) {}

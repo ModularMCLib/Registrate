@@ -66,6 +66,6 @@ jobs:
           prerelease: true
           body: |
             The latest build of RegistrateLib for Minecraft ${{ github.ref_name }}.
-            Please report any [issues](https://github.com/ModularMCLib/RegistrateLib/issues).
+            Please report any [issues](https://github.com/ModularMCLib/Registrate-Lib/issues).
             ${{ steps.changelog.outputs.changelog }}
           files: build/libs/*.jar
