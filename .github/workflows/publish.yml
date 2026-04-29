@@ -103,9 +103,9 @@ jobs:
 #          modrinth-id: aADDBrNC
 #          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
 #          files: |
-#            ./gtmoremachine-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar
-#            ./!(gtmoremachine-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar)
-#          name: 'GTMoreMachine ${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
+#            ./registrate-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar
+#            ./!(registrate-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar)
+#          name: 'RegistrateLib ${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
 #          version: 'mc${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
 #          version-type: ${{ env.VERSION_TYPE }}
 #          changelog: ${{ inputs.release-body }}
@@ -136,9 +136,9 @@ jobs:
 #          curseforge-id: 1397216
 #          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 #          files: |
-#            ./gtmoremachine-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar
-#            ./!(gtmoremachine-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar)
-#          name: 'GTMoreMachine ${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
+#            ./registrate-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar
+#            ./!(registrate-${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}.jar)
+#          name: 'RegistrateLib ${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
 #          version: 'mc${{ env.MC_VERSION }}-${{ needs.build.outputs.ver }}'
 #          version-type: ${{ env.VERSION_TYPE }}
 #          changelog: ${{ inputs.release-body }}

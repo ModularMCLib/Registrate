@@ -806,7 +806,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * <a href="https://github.com/ModularMCLib/RegistrateLib/wiki/Custom-Builders">custom builder type</a>.
      * <p>
      * Uses the currently set name (via {@link #object(String)}) as the name for the new entry, and passes it to the
      * factory as the first parameter.
@@ -829,7 +829,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Create a builder for a new entry. This is typically not needed, unless you are implementing a
-     * <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
+     * <a href="https://github.com/ModularMCLib/RegistrateLib/wiki/Custom-Builders">custom builder type</a>.
      *
      * @param <R>
      *                Registry type
